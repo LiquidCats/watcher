@@ -53,7 +53,7 @@ func NewRpcClient(cfg configs.Config) *Client {
 	}
 }
 
-func (cli *Client) CallFor(ctx context.Context, method string, dest any, params ...any) error {
+func (cli *Client) CallFor(ctx context.Context, dest any, method string, params ...any) error {
 	id := time.Now().UnixMicro()
 
 	body := requestBody{

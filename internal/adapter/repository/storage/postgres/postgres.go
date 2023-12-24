@@ -33,10 +33,10 @@ func (s *StorageRepository) Transaction(ctx context.Context, cb func() error) er
 	return tx.Commit()
 }
 
-func (s *StorageRepository) GetHeight(ctx context.Context, driver entity.Blockchain) (entity.BlockHeight, error) {
-	row := sq.Select("value").
+func (s *StorageRepository) GetHeight(ctx context.Context, blockchain entity.Blockchain) (entity.BlockHeight, error) {
+	row := sq.Select("height_value").
 		From(HeightsTable).
-		Where("driver", sq.Eq{"driver": driver}).
+		Where(sq.Eq{"blockchain": blockchain}).
 		Limit(1).
 		RunWith(s.conn).
 		PlaceholderFormat(sq.Dollar).

@@ -19,14 +19,14 @@ func NewStorageRepository(conn *sql.DB) *StorageRepository {
 	}
 }
 
-func (s *StorageRepository) Transaction(ctx context.Context, cb func() error) error {
+func (s *StorageRepository) Transaction(ctx context.Context, cb func(ctx context.Context) error) error {
 	tx, err := s.conn.BeginTx(ctx, &sql.TxOptions{})
 
 	if err != nil {
 		return err
 	}
 
-	if err := cb(); err != nil {
+	if err := cb(ctx); err != nil {
 		return tx.Rollback()
 	}
 

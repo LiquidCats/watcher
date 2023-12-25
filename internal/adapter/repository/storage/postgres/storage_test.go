@@ -6,11 +6,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 	"watcher/internal/app/domain/entity"
-	"watcher/test/mock"
+	"watcher/test/mocks"
 )
 
 func TestStorageRepository_GetHeight(t *testing.T) {
-	conn, dbMock := mock.MockDB(t)
+	conn, dbMock := mocks.MockDB(t)
 	defer conn.Close()
 
 	rows := dbMock.NewRows([]string{"height_value"}).
@@ -32,7 +32,7 @@ func TestStorageRepository_GetHeight(t *testing.T) {
 }
 
 func TestStorageRepository_StoreBlock(t *testing.T) {
-	conn, dbMock := mock.MockDB(t)
+	conn, dbMock := mocks.MockDB(t)
 	defer conn.Close()
 
 	block := &entity.Block{
@@ -55,7 +55,7 @@ func TestStorageRepository_StoreBlock(t *testing.T) {
 }
 
 func TestStorageRepository_UpdateBlock(t *testing.T) {
-	conn, dbMock := mock.MockDB(t)
+	conn, dbMock := mocks.MockDB(t)
 	defer conn.Close()
 
 	block := &entity.Block{
@@ -78,7 +78,7 @@ func TestStorageRepository_UpdateBlock(t *testing.T) {
 }
 
 func TestStorageRepository_GetBlock(t *testing.T) {
-	conn, dbMock := mock.MockDB(t)
+	conn, dbMock := mocks.MockDB(t)
 	defer conn.Close()
 
 	rows := dbMock.NewRows([]string{"height", "hash", "previous"}).
@@ -102,7 +102,7 @@ func TestStorageRepository_GetBlock(t *testing.T) {
 }
 
 func TestStorageRepository_ConfirmBlock(t *testing.T) {
-	conn, dbMock := mock.MockDB(t)
+	conn, dbMock := mocks.MockDB(t)
 	defer conn.Close()
 
 	dbMock.ExpectExec("UPDATE blocks_bitcoin SET is_confirmed = \\$1 WHERE height = \\$2").
@@ -119,7 +119,7 @@ func TestStorageRepository_ConfirmBlock(t *testing.T) {
 }
 
 func TestStorageRepository_GetAllUnconfirmedBlocks(t *testing.T) {
-	conn, dbMock := mock.MockDB(t)
+	conn, dbMock := mocks.MockDB(t)
 	defer conn.Close()
 
 	rows := dbMock.NewRows([]string{"height", "hash", "previous"}).

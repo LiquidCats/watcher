@@ -2,14 +2,13 @@ package configs
 
 import (
 	"fmt"
-	"time"
 	"watcher/internal/app/domain/entity"
 )
 
 type Config struct {
 	Blockchain entity.Blockchain
-	NodeUrl    string
-	Interval   time.Duration
+	NodeUrl    string `envconfig:"NODE_URL"`
+	Interval   int
 	Gap        entity.BlockHeight
 	Workers    int
 
@@ -31,7 +30,7 @@ type Broadcaster struct {
 
 func (d *DB) ToPostgres() string {
 	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		d.User,
 		d.Password,
 		d.Host,

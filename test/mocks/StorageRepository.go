@@ -146,14 +146,6 @@ func (_m *StorageRepository) Transaction(ctx context.Context, cb func(context.Co
 		panic("no return value specified for Transaction")
 	}
 
-	//rf, ok := ret.Get(0).(func(context.Context, func(context.Context) error) error)
-	//fmt.Println()
-	//fmt.Println()
-	//fmt.Printf("%+v", rf)
-	//fmt.Println()
-	//fmt.Printf("%+v", ok)
-	//fmt.Println()
-	//fmt.Println()
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, func(context.Context) error) error); ok {
 		r0 = rf(ctx, cb)

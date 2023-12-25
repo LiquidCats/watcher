@@ -6,7 +6,7 @@ import (
 )
 
 type EventPublisher interface {
-	NewBlock(ctx context.Context, block *entity.Block) error
-	ConfirmBlock(ctx context.Context, block *entity.Block) error
-	RejectBlock(ctx context.Context, block *entity.Block) error
+	NewBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error
+	ConfirmBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error
+	RejectBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error
 }

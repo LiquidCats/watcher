@@ -6,6 +6,7 @@ import (
 )
 
 type StorageRepository interface {
+	Transaction(ctx context.Context, cb func(ctx context.Context) error) error
 	GetHeight(ctx context.Context, blockchain entity.Blockchain) (entity.BlockHeight, error)
 	StoreBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error
 	UpdateBlock(ctx context.Context, blockchain entity.Blockchain, newBlock *entity.Block) error

@@ -55,13 +55,19 @@ func (w *BlockHandlingUsecase) Handle(ctx context.Context, blocksChan chan<- ent
 }
 
 func (w *BlockHandlingUsecase) handleBlock(ctx context.Context, blockHeight entity.BlockHeight) error {
-	block, err := w.rpc.GetBlockByHeight(ctx, blockHeight)
-	if err != nil {
-		return err
-	}
-	if err := w.storage.StoreBlock(ctx, w.cfg.Blockchain, block); err != nil {
-		return err
-	}
+	return w.storage.Transaction(ctx, func(ctx context.Context) error {
+		block, err := w.rpc.GetBlockByHeight(ctx, blockHeight)
+		if err != nil {
+			return err
+		}
+		if err := w.storage.StoreBlock(ctx, w.cfg.Blockchain, block); err != nil {
+			return err
+		}
+		if err := w.storage.UpdateHeight(ctx, w.cfg.Blockchain, blockHeight); err != nil {
+			return err
+		}
 
-	return w.publisher.NewBlock(ctx, w.cfg.Blockchain, block)
+		return w.publisher.NewBlock(ctx, w.cfg.Blockchain, block)
+	})
+
 }

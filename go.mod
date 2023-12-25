@@ -3,6 +3,7 @@ module watcher
 go 1.21
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.1
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/stretchr/testify v1.8.1

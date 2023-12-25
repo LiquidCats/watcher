@@ -153,3 +153,20 @@ func TestStorageRepository_GetAllUnconfirmedBlocks(t *testing.T) {
 	require.Equal(t, entity.BlockHash("current_hash_1"), blocks[1].Hash)
 	require.Equal(t, entity.BlockHash("previous_hash_1"), blocks[1].Previous)
 }
+
+func TestStorageRepository_UpdateHeight(t *testing.T) {
+	conn, dbMock := mocks.MockDB(t)
+	defer conn.Close()
+
+	dbMock.ExpectExec("UPDATE heights SET height_value = \\$1 WHERE blockchain = \\$2").
+		WithArgs(10000, "ethereum").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	repo := NewStorageRepository(conn)
+
+	ctx := context.Background()
+
+	err := repo.UpdateHeight(ctx, entity.Ethereum, entity.BlockHeight(10000))
+
+	require.NoError(t, err)
+}

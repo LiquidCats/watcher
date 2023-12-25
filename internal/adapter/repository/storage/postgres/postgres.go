@@ -3,8 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	sq "github.com/Masterminds/squirrel"
-	"watcher/internal/app/domain/entity"
 )
 
 type StorageRepository struct {
@@ -31,22 +29,4 @@ func (s *StorageRepository) Transaction(ctx context.Context, cb func(ctx context
 	}
 
 	return tx.Commit()
-}
-
-func (s *StorageRepository) GetHeight(ctx context.Context, blockchain entity.Blockchain) (entity.BlockHeight, error) {
-	row := sq.Select("height_value").
-		From(HeightsTable).
-		Where(sq.Eq{"blockchain": blockchain}).
-		Limit(1).
-		RunWith(s.conn).
-		PlaceholderFormat(sq.Dollar).
-		QueryRowContext(ctx)
-
-	var height entity.BlockHeight
-
-	if err := row.Scan(&height); err != nil {
-		return 0, err
-	}
-
-	return height, nil
 }

@@ -2,8 +2,8 @@ package blockchain
 
 import (
 	"fmt"
+	"github.com/ybbus/jsonrpc/v3"
 	"watcher/configs"
-	"watcher/internal/adapter/repository/rpc"
 	"watcher/internal/adapter/repository/rpc/bitcoin"
 	"watcher/internal/adapter/repository/rpc/ethereum"
 	"watcher/internal/app/domain/entity"
@@ -11,7 +11,7 @@ import (
 )
 
 func GetBlockchainRpcRepository(cfg configs.Config) (port.RpcRepository, error) {
-	client := rpc.NewRpcClient(cfg)
+	client := jsonrpc.NewClient(cfg.NodeUrl)
 
 	switch cfg.Blockchain {
 	case entity.Ethereum:

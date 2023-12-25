@@ -8,12 +8,12 @@ import (
 
 type block struct {
 	Hash       string `json:"hash"`
-	Height     string `json:"height"`
-	ParentHash string `json:"parent_hash"`
+	Number     string `json:"number"`
+	ParentHash string `json:"parentHash"`
 }
 
 func (r *block) toEntity() *entity.Block {
-	height := strings.ToLower(r.Height)
+	height := strings.ToLower(r.Number)
 	height = strings.Replace(height, "0x", "", -1)
 	output, _ := strconv.ParseUint(height, 16, 64)
 

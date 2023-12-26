@@ -11,13 +11,16 @@ WORKDIR /app
 COPY . .
 
 RUN go mod download
-RUN go build -o /main ./cmd/watcher
+RUN go build -o /app/main ./cmd/watcher
 
 # Start from scratch for the final image
 FROM scratch AS app
 
+WORKDIR /
+
 # Copy the built binary from the build stage
-COPY --from=build /main /main
+COPY --from=build /app/database/migrations database/migrations
+COPY --from=build /app/main main
 
 # Define the command to run the application
 CMD ["/main"]

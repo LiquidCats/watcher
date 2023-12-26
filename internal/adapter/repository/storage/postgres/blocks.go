@@ -67,7 +67,7 @@ func (s *StorageRepository) GetAllUnconfirmedBlocks(ctx context.Context, blockch
 			sq.LtOrEq{"height": fromHeight},
 			sq.Eq{"is_confirmed": false},
 		}).
-		OrderBy("height DESC").
+		OrderBy("height").
 		RunWith(s.conn).
 		PlaceholderFormat(sq.Dollar).
 		QueryContext(ctx)

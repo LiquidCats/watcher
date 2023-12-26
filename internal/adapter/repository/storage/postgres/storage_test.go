@@ -123,11 +123,11 @@ func TestStorageRepository_GetAllUnconfirmedBlocks(t *testing.T) {
 	defer conn.Close()
 
 	rows := dbMock.NewRows([]string{"height", "hash", "previous"}).
-		AddRow(10002, "current_hash_2", "previous_hash_2").
+		AddRow(10000, "current_hash_0", "previous_hash_0").
 		AddRow(10001, "current_hash_1", "previous_hash_1").
-		AddRow(10000, "current_hash_0", "previous_hash_0")
+		AddRow(10002, "current_hash_2", "previous_hash_2")
 
-	dbMock.ExpectQuery("SELECT height, hash, previous FROM blocks_ethereum WHERE \\(height <= \\$1 AND is_confirmed = \\$2\\) ORDER BY height DESC").
+	dbMock.ExpectQuery("SELECT height, hash, previous FROM blocks_ethereum WHERE \\(height <= \\$1 AND is_confirmed = \\$2\\) ORDER BY height").
 		WithArgs(10000, false).
 		WillReturnRows(rows)
 
@@ -141,17 +141,17 @@ func TestStorageRepository_GetAllUnconfirmedBlocks(t *testing.T) {
 
 	require.Len(t, blocks, 3)
 
-	require.Equal(t, entity.BlockHeight(10002), blocks[0].Height)
-	require.Equal(t, entity.BlockHash("current_hash_2"), blocks[0].Hash)
-	require.Equal(t, entity.BlockHash("previous_hash_2"), blocks[0].Previous)
-
-	require.Equal(t, entity.BlockHeight(10000), blocks[2].Height)
-	require.Equal(t, entity.BlockHash("current_hash_0"), blocks[2].Hash)
-	require.Equal(t, entity.BlockHash("previous_hash_0"), blocks[2].Previous)
+	require.Equal(t, entity.BlockHeight(10000), blocks[0].Height)
+	require.Equal(t, entity.BlockHash("current_hash_0"), blocks[0].Hash)
+	require.Equal(t, entity.BlockHash("previous_hash_0"), blocks[0].Previous)
 
 	require.Equal(t, entity.BlockHeight(10001), blocks[1].Height)
 	require.Equal(t, entity.BlockHash("current_hash_1"), blocks[1].Hash)
 	require.Equal(t, entity.BlockHash("previous_hash_1"), blocks[1].Previous)
+
+	require.Equal(t, entity.BlockHeight(10002), blocks[2].Height)
+	require.Equal(t, entity.BlockHash("current_hash_2"), blocks[2].Hash)
+	require.Equal(t, entity.BlockHash("previous_hash_2"), blocks[2].Previous)
 }
 
 func TestStorageRepository_UpdateHeight(t *testing.T) {

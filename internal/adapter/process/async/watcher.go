@@ -3,7 +3,6 @@ package async
 import (
 	"go.uber.org/zap"
 	"watcher/configs"
-	"watcher/internal/app/domain/entity"
 	"watcher/internal/app/usecase"
 )
 
@@ -12,7 +11,6 @@ type WatchProcess struct {
 	cfg                 configs.Config
 	confirmationUsecase *usecase.BlockConfirmationUsecase
 	tickUsecase         *usecase.BlockHandlingUsecase
-	confirmationsChan   chan entity.BlockHeight
 }
 
 func NewWatcher(
@@ -26,6 +24,5 @@ func NewWatcher(
 		cfg:                 cfg,
 		confirmationUsecase: confirmationUsecase,
 		tickUsecase:         tickUsecase,
-		confirmationsChan:   make(chan entity.BlockHeight),
 	}
 }

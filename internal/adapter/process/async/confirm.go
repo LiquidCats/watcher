@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-func (w *WatchProcess) Watch(ctx context.Context) error {
+func (w *WatchProcess) Confirm(ctx context.Context) error {
 	ticker := time.NewTicker(time.Second * time.Duration(w.cfg.Interval))
 	defer ticker.Stop()
 
 	for {
-		if err := w.tickUsecase.Handle(ctx); err != nil {
+		if err := w.confirmationUsecase.Confirm(ctx); err != nil {
 			return err
 		}
 

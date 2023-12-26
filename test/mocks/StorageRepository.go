@@ -174,6 +174,24 @@ func (_m *StorageRepository) UpdateBlock(ctx context.Context, blockchain entity.
 	return r0
 }
 
+// UpdateHeight provides a mock function with given fields: ctx, blockchain, height
+func (_m *StorageRepository) UpdateHeight(ctx context.Context, blockchain entity.Blockchain, height entity.BlockHeight) error {
+	ret := _m.Called(ctx, blockchain, height)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateHeight")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Blockchain, entity.BlockHeight) error); ok {
+		r0 = rf(ctx, blockchain, height)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewStorageRepository creates a new instance of StorageRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewStorageRepository(t interface {

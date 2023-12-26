@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 	"watcher/configs"
+	"watcher/internal/adapter/logger"
 	"watcher/internal/app/domain/entity"
 	mocks "watcher/test/mocks"
 )
@@ -16,8 +17,9 @@ func TestBlockConfirmationUsecase_Confirm(t *testing.T) {
 		NodeUrl:    "http://test",
 		Interval:   10,
 		Gap:        6,
-		Workers:    3,
 	}
+
+	savedHeight := entity.BlockHeight(10000)
 
 	t.Run("confirm", func(t *testing.T) {
 		rpc := mocks.NewRpcRepository(t)
@@ -37,19 +39,35 @@ func TestBlockConfirmationUsecase_Confirm(t *testing.T) {
 			Previous: "previous_hash",
 		}
 
-		rpc.On("GetBlockByHeight", ctx, entity.BlockHeight(10000-6)).Once().Return(blockchainBlock, nil)
-
 		storage.On("Transaction", ctx, mock.Anything).Return(func(ctx context.Context, cb func(context.Context) error) error {
 			return cb(ctx)
 		})
-		storage.On("GetBlock", ctx, entity.Bitcoin, blockchainBlock.Height).Once().Return(storedBlock, nil)
-		storage.On("ConfirmBlock", ctx, entity.Bitcoin, entity.BlockHeight(9994)).Once().Return(nil)
 
-		publisher.On("ConfirmBlock", ctx, entity.Bitcoin, blockchainBlock).Once().Return(nil)
+		storage.On("GetHeight", ctx, cfg.Blockchain).
+			Once().
+			Return(savedHeight, nil)
 
-		usecase := NewBlockConfirmationUsecase(cfg, rpc, storage, publisher)
+		storage.On("GetAllUnconfirmedBlocks", ctx, cfg.Blockchain, savedHeight-cfg.Gap).
+			Once().
+			Return([]*entity.Block{
+				storedBlock,
+			}, nil)
 
-		err := usecase.Confirm(ctx, entity.BlockHeight(10000))
+		rpc.On("GetBlockByHeight", ctx, storedBlock.Height).
+			Once().
+			Return(blockchainBlock, nil)
+
+		storage.On("ConfirmBlock", ctx, cfg.Blockchain, savedHeight-cfg.Gap).
+			Once().
+			Return(nil)
+
+		publisher.On("ConfirmBlock", ctx, cfg.Blockchain, blockchainBlock).
+			Once().
+			Return(nil)
+
+		usecase := NewBlockConfirmationUsecase(cfg, rpc, storage, publisher, logger.NewLogger("test"))
+
+		err := usecase.Confirm(ctx)
 
 		require.NoError(t, err)
 	})
@@ -72,12 +90,24 @@ func TestBlockConfirmationUsecase_Confirm(t *testing.T) {
 			Previous: "previous_hash",
 		}
 
-		rpc.On("GetBlockByHeight", ctx, entity.BlockHeight(10000-6)).Once().Return(blockchainBlock, nil)
-
 		storage.On("Transaction", ctx, mock.Anything).Return(func(ctx context.Context, cb func(context.Context) error) error {
 			return cb(ctx)
 		})
-		storage.On("GetBlock", ctx, entity.Bitcoin, blockchainBlock.Height).Once().Return(storedBlock, nil)
+
+		storage.On("GetHeight", ctx, cfg.Blockchain).
+			Once().
+			Return(savedHeight, nil)
+
+		storage.On("GetAllUnconfirmedBlocks", ctx, cfg.Blockchain, savedHeight-cfg.Gap).
+			Once().
+			Return([]*entity.Block{
+				storedBlock,
+			}, nil)
+
+		rpc.On("GetBlockByHeight", ctx, storedBlock.Height).
+			Once().
+			Return(blockchainBlock, nil)
+
 		storage.On("UpdateBlock", ctx, entity.Bitcoin, blockchainBlock).Once().Return(nil)
 		publisher.On("NewBlock", ctx, entity.Bitcoin, blockchainBlock).Once().Return(nil)
 		publisher.On("RejectBlock", ctx, entity.Bitcoin, storedBlock).Once().Return(nil)
@@ -86,9 +116,9 @@ func TestBlockConfirmationUsecase_Confirm(t *testing.T) {
 
 		publisher.On("ConfirmBlock", ctx, entity.Bitcoin, blockchainBlock).Once().Return(nil)
 
-		usecase := NewBlockConfirmationUsecase(cfg, rpc, storage, publisher)
+		usecase := NewBlockConfirmationUsecase(cfg, rpc, storage, publisher, logger.NewLogger("test"))
 
-		err := usecase.Confirm(ctx, entity.BlockHeight(10000))
+		err := usecase.Confirm(ctx)
 
 		require.NoError(t, err)
 	})

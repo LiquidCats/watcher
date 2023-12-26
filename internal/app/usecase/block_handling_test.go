@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"watcher/configs"
+	"watcher/internal/adapter/logger"
 	"watcher/internal/app/domain/entity"
 	"watcher/test/mocks"
 )
@@ -12,14 +14,11 @@ import (
 func TestBlockHandlingUsecase_Handle(t *testing.T) {
 	ctx := context.Background()
 
-	blockChan := make(chan entity.BlockHeight, 3)
-
 	cfg := configs.Config{
 		Blockchain: entity.Ethereum,
 		NodeUrl:    "http://test",
 		Interval:   10,
 		Gap:        6,
-		Workers:    3,
 	}
 
 	rpc := mocks.NewRpcRepository(t)
@@ -36,20 +35,18 @@ func TestBlockHandlingUsecase_Handle(t *testing.T) {
 
 	storage.On("GetHeight", ctx, entity.Ethereum).Once().Return(storedHeight, nil)
 	rpc.On("GetLatestBlock", ctx).Once().Return(blockchainBlock, nil)
+	storage.On("Transaction", ctx, mock.Anything).Return(func(ctx context.Context, cb func(context.Context) error) error {
+		return cb(ctx)
+	})
 	rpc.On("GetBlockByHeight", ctx, blockchainBlock.Height).Once().Return(blockchainBlock, nil)
 	storage.On("StoreBlock", ctx, entity.Ethereum, blockchainBlock).Once().Return(nil)
+	storage.On("UpdateHeight", ctx, entity.Ethereum, blockchainBlock.Height).Once().Return(nil)
 	publisher.On("NewBlock", ctx, entity.Ethereum, blockchainBlock).Once().Return(nil)
 
-	usecase := NewBlockHandlingUsecase(cfg, rpc, storage, publisher)
+	usecase := NewBlockHandlingUsecase(cfg, rpc, storage, publisher, logger.NewLogger("test"))
 
-	err := usecase.Handle(ctx, blockChan)
-
-	require.Len(t, blockChan, 1)
-
-	blockHeight := <-blockChan
-	close(blockChan)
+	err := usecase.Handle(ctx)
 
 	require.NoError(t, err)
-	require.Equal(t, entity.BlockHeight(10000), blockHeight)
 
 }

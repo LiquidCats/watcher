@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"watcher/configs"
 	"watcher/internal/app/domain/entity"
 	"watcher/internal/port"
@@ -12,6 +13,7 @@ type BlockConfirmationUsecase struct {
 	rpc       port.RpcRepository
 	storage   port.StorageRepository
 	publisher port.EventPublisher
+	logger    *zap.Logger
 }
 
 func NewBlockConfirmationUsecase(
@@ -19,37 +21,53 @@ func NewBlockConfirmationUsecase(
 	rpc port.RpcRepository,
 	storage port.StorageRepository,
 	publisher port.EventPublisher,
+	logger *zap.Logger,
 ) *BlockConfirmationUsecase {
 	return &BlockConfirmationUsecase{
 		cfg:       cfg,
 		rpc:       rpc,
 		storage:   storage,
 		publisher: publisher,
+		logger:    logger,
 	}
 }
 
-func (b *BlockConfirmationUsecase) Confirm(ctx context.Context, savedHeight entity.BlockHeight) error {
-	confirmationHeight := savedHeight - b.cfg.Gap
-
-	block, err := b.rpc.GetBlockByHeight(ctx, confirmationHeight)
-	if err != nil {
-		return err
-	}
-
+func (b *BlockConfirmationUsecase) Confirm(ctx context.Context) error {
 	return b.storage.Transaction(ctx, func(ctx context.Context) error {
-		storedBlock, err := b.storage.GetBlock(ctx, b.cfg.Blockchain, confirmationHeight)
+		savedHeight, err := b.storage.GetHeight(ctx, b.cfg.Blockchain)
 		if err != nil {
 			return err
 		}
 
-		if block.Hash != storedBlock.Hash {
-			if err := b.reject(ctx, storedBlock, block); err != nil {
+		blocksToConfirm, err := b.storage.GetAllUnconfirmedBlocks(ctx, b.cfg.Blockchain, savedHeight-b.cfg.Gap)
+
+		for _, storedBlock := range blocksToConfirm {
+			blockchainBlock, err := b.rpc.GetBlockByHeight(ctx, storedBlock.Height)
+			if err != nil {
 				return err
 			}
-		}
 
-		if err := b.confirm(ctx, block); err != nil {
-			return err
+			if blockchainBlock.Hash != storedBlock.Hash {
+				if err := b.reject(ctx, storedBlock, blockchainBlock); err != nil {
+					return err
+				}
+
+				b.logger.Info(
+					"block rejected",
+					zap.String("block_hash", string(storedBlock.Hash)),
+					zap.Int("block_height", int(storedBlock.Height)),
+				)
+			}
+
+			if err := b.confirm(ctx, blockchainBlock); err != nil {
+				return err
+			}
+
+			b.logger.Info(
+				"block confirmed",
+				zap.String("block_hash", string(blockchainBlock.Hash)),
+				zap.Int("block_height", int(blockchainBlock.Height)),
+			)
 		}
 
 		return nil

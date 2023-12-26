@@ -10,7 +10,6 @@ type Config struct {
 	NodeUrl    string `envconfig:"NODE_URL"`
 	Interval   int
 	Gap        entity.BlockHeight
-	Workers    int
 
 	DB          DB
 	Broadcaster Broadcaster

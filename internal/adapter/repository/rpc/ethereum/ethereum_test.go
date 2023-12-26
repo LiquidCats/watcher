@@ -18,7 +18,7 @@ var height = 18_850_374
 
 func (r *rpcCaller) CallFor(ctx context.Context, dest any, method string, params ...any) error {
 	b := dest.(*block)
-	b.Height = toHex(entity.BlockHeight(height))
+	b.Number = toHex(entity.BlockHeight(height))
 	b.Hash = hash
 	b.ParentHash = previous
 

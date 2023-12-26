@@ -5,6 +5,7 @@ import (
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"watcher/configs"
+	"watcher/database"
 	"watcher/internal/adapter/event/null"
 	"watcher/internal/adapter/logger"
 	"watcher/internal/adapter/process/async"
@@ -23,7 +24,7 @@ func main() {
 		log.Fatal("app: config", zap.Error(err))
 	}
 
-	conn, err := sql.Open("postgres", cfg.DB.ToPostgres())
+	conn, err := sql.Open(cfg.DB.Driver, cfg.DB.ToDSN())
 	if err != nil {
 		log.Fatal("app: database", zap.Error(err))
 	}
@@ -33,6 +34,10 @@ func main() {
 			log.Fatal("app: database", zap.Error(err))
 		}
 	}(conn)
+
+	if err := database.Migrate(conn, cfg); err != nil {
+		log.Fatal("app: migrate", zap.Error(err))
+	}
 
 	rpc, err := blockchain.GetBlockchainRpcRepository(cfg)
 	if err != nil {

@@ -16,6 +16,7 @@ type Config struct {
 }
 
 type DB struct {
+	Driver   string `default:"postgres"`
 	Host     string
 	Port     string
 	Database string
@@ -27,9 +28,10 @@ type Broadcaster struct {
 	Host string
 }
 
-func (d *DB) ToPostgres() string {
+func (d *DB) ToDSN() string {
 	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		"%s://%s:%s@%s:%s/%s?sslmode=disable",
+		d.Driver,
 		d.User,
 		d.Password,
 		d.Host,

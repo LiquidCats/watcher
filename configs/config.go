@@ -10,9 +10,16 @@ type Config struct {
 	NodeUrl    string `envconfig:"NODE_URL"`
 	Interval   int
 	Gap        entity.BlockHeight
+	Cleanup    Cleanup
 
 	DB          DB
 	Broadcaster Broadcaster
+}
+
+type Cleanup struct {
+	Enabled  bool               `default:"false"`
+	Interval int                `default:"120"`
+	Gap      entity.BlockHeight `default:"10"` // how many block from the last confirmed
 }
 
 type DB struct {

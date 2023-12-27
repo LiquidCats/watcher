@@ -5,12 +5,16 @@ import (
 	"time"
 )
 
-func (w *WatchProcess) Watch(ctx context.Context) error {
+func (w *WatchProcess) Cleanup(ctx context.Context) error {
+	if !w.cfg.Cleanup.Enabled {
+		return nil
+	}
+
 	ticker := time.NewTicker(time.Second * time.Duration(w.cfg.Interval))
 	defer ticker.Stop()
 
 	for {
-		if err := w.blockHandlingUsecase.Handle(ctx); err != nil {
+		if err := w.cleanupUsecase.Clean(ctx); err != nil {
 			return err
 		}
 

@@ -47,14 +47,16 @@ func main() {
 	storage := postgres.NewStorageRepository(conn)
 	publisher := null.NewPublisher(cfg)
 
-	blockConfirmationUsecase := usecase.NewBlockConfirmationUsecase(cfg, rpc, storage, publisher, log)
-	tickUsecase := usecase.NewBlockHandlingUsecase(cfg, rpc, storage, publisher, log)
+	blockConfirmationUsecase := usecase.NewBlockConfirmationUsecase(cfg, rpc, storage, publisher, log.Named("confirmation"))
+	blockHandlingUsecase := usecase.NewBlockHandlingUsecase(cfg, rpc, storage, publisher, log.Named("handling"))
+	cleanupUsecase := usecase.NewCleanupUsecase(cfg, storage, log.Named("cleanup"))
 
-	watcher := async.NewWatcher(log, cfg, blockConfirmationUsecase, tickUsecase)
+	watcher := async.NewWatcher(log, cfg, blockConfirmationUsecase, blockHandlingUsecase, cleanupUsecase)
 
 	if err := graceful.Wait(
 		watcher.Watch,
 		watcher.Confirm,
+		watcher.Cleanup,
 	); err != nil {
 		log.Fatal("app: graceful", zap.Error(err))
 	}

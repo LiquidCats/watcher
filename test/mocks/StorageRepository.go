@@ -120,6 +120,24 @@ func (_m *StorageRepository) GetHeight(ctx context.Context, blockchain entity.Bl
 	return r0, r1
 }
 
+// RemoveConfirmedBlocks provides a mock function with given fields: ctx, blockchain, fromHeight
+func (_m *StorageRepository) RemoveConfirmedBlocks(ctx context.Context, blockchain entity.Blockchain, fromHeight entity.BlockHeight) error {
+	ret := _m.Called(ctx, blockchain, fromHeight)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveConfirmedBlocks")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Blockchain, entity.BlockHeight) error); ok {
+		r0 = rf(ctx, blockchain, fromHeight)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // StoreBlock provides a mock function with given fields: ctx, blockchain, block
 func (_m *StorageRepository) StoreBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error {
 	ret := _m.Called(ctx, blockchain, block)

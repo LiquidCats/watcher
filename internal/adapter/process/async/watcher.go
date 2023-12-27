@@ -7,22 +7,25 @@ import (
 )
 
 type WatchProcess struct {
-	logger              *zap.Logger
-	cfg                 configs.Config
-	confirmationUsecase *usecase.BlockConfirmationUsecase
-	tickUsecase         *usecase.BlockHandlingUsecase
+	logger               *zap.Logger
+	cfg                  configs.Config
+	confirmationUsecase  *usecase.BlockConfirmationUsecase
+	blockHandlingUsecase *usecase.BlockHandlingUsecase
+	cleanupUsecase       *usecase.CleanupUsecase
 }
 
 func NewWatcher(
 	logger *zap.Logger,
 	cfg configs.Config,
 	confirmationUsecase *usecase.BlockConfirmationUsecase,
-	tickUsecase *usecase.BlockHandlingUsecase,
+	blockHandlingUsecase *usecase.BlockHandlingUsecase,
+	cleanupUsecase *usecase.CleanupUsecase,
 ) *WatchProcess {
 	return &WatchProcess{
-		logger:              logger,
-		cfg:                 cfg,
-		confirmationUsecase: confirmationUsecase,
-		tickUsecase:         tickUsecase,
+		logger:               logger,
+		cfg:                  cfg,
+		confirmationUsecase:  confirmationUsecase,
+		blockHandlingUsecase: blockHandlingUsecase,
+		cleanupUsecase:       cleanupUsecase,
 	}
 }

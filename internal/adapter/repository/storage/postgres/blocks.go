@@ -109,3 +109,20 @@ func (s *StorageRepository) ConfirmBlock(ctx context.Context, blockchain entity.
 
 	return nil
 }
+
+func (s *StorageRepository) RemoveConfirmedBlocks(ctx context.Context, blockchain entity.Blockchain, fromHeight entity.BlockHeight) error {
+	_, err := sq.Delete(fmt.Sprint(BlocksTable, "_", blockchain)).
+		Where(sq.And{
+			sq.LtOrEq{"height": fromHeight},
+			sq.Eq{"is_confirmed": true},
+		}).
+		RunWith(s.conn).
+		PlaceholderFormat(sq.Dollar).
+		ExecContext(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

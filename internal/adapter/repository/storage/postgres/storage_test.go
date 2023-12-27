@@ -170,3 +170,20 @@ func TestStorageRepository_UpdateHeight(t *testing.T) {
 
 	require.NoError(t, err)
 }
+
+func TestStorageRepository_RemoveConfirmedBlocks(t *testing.T) {
+	conn, dbMock := mocks.MockDB(t)
+	defer conn.Close()
+
+	dbMock.ExpectExec("DELETE FROM blocks_ethereum WHERE \\(height <= \\$1 AND is_confirmed = \\$2\\)").
+		WithArgs(10000, true).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	repo := NewStorageRepository(conn)
+
+	ctx := context.Background()
+
+	err := repo.RemoveConfirmedBlocks(ctx, entity.Ethereum, entity.BlockHeight(10000))
+
+	require.NoError(t, err)
+}

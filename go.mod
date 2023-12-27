@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.1
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9

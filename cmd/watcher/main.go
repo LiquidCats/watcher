@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 	"watcher/configs"
 	"watcher/database"
-	"watcher/internal/adapter/event/null"
+	"watcher/internal/adapter/event/kafka"
 	"watcher/internal/adapter/logger"
 	"watcher/internal/adapter/process/async"
 	"watcher/internal/adapter/repository/storage/postgres"
@@ -15,11 +15,11 @@ import (
 	"watcher/pkg/graceful"
 )
 
-const AppName = "watcher"
+const appName = "watcher"
 
 func main() {
-	log := logger.NewLogger(AppName)
-	cfg, err := configs.Load(AppName)
+	log := logger.NewLogger(appName)
+	cfg, err := configs.Load(appName)
 	if err != nil {
 		log.Fatal("app: config", zap.Error(err))
 	}
@@ -45,7 +45,10 @@ func main() {
 	}
 
 	storage := postgres.NewStorageRepository(conn)
-	publisher := null.NewPublisher(cfg)
+	publisher, err := kafka.NewPublisher(appName, cfg)
+	if err != nil {
+		log.Fatal("app: publisher", zap.Error(err))
+	}
 
 	blockConfirmationUsecase := usecase.NewBlockConfirmationUsecase(cfg, rpc, storage, publisher, log.Named("confirmation"))
 	blockHandlingUsecase := usecase.NewBlockHandlingUsecase(cfg, rpc, storage, publisher, log.Named("handling"))

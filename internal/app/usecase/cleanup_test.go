@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 	"watcher/configs"
+	"watcher/internal/adapter/logger"
 	"watcher/internal/app/domain/entity"
 	"watcher/test/mocks"
 )
@@ -34,7 +35,7 @@ func TestCleanupUsecase_Clean(t *testing.T) {
 	storage.On("GetHeight", ctx, cfg.Blockchain).Once().Return(storedHeight, nil)
 	storage.On("RemoveConfirmedBlocks", ctx, cfg.Blockchain, fromHeight).Once().Return(nil)
 
-	usecase := NewCleanupUsecase(cfg, storage)
+	usecase := NewCleanupUsecase(cfg, storage, logger.NewLogger("test"))
 
 	err := usecase.Clean(ctx)
 

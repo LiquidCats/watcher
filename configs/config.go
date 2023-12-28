@@ -12,8 +12,9 @@ type Config struct {
 	Gap        entity.BlockHeight
 	Cleanup    Cleanup
 
-	DB          DB
-	Broadcaster Broadcaster
+	DB    DB
+	Kafka KafkaConfig `envconfig:"KAFKA"`
+	Redis RedisConfig `envconfig:"REDIS"`
 }
 
 type Cleanup struct {
@@ -31,8 +32,14 @@ type DB struct {
 	Password string
 }
 
-type Broadcaster struct {
+type KafkaConfig struct {
 	Host string
+}
+
+type RedisConfig struct {
+	Host     string
+	Password string
+	DB       int
 }
 
 func (d *DB) ToDSN() string {

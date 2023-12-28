@@ -25,7 +25,11 @@ func (s *StorageRepository) Transaction(ctx context.Context, cb func(ctx context
 	}
 
 	if err := cb(ctx); err != nil {
-		return tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+
+		return err
 	}
 
 	return tx.Commit()

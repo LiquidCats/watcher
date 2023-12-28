@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 	"watcher/configs"
 	"watcher/database"
-	"watcher/internal/adapter/event/kafka"
+	"watcher/internal/adapter/event/redis"
 	"watcher/internal/adapter/logger"
 	"watcher/internal/adapter/process/async"
 	"watcher/internal/adapter/repository/storage/postgres"
@@ -45,10 +45,7 @@ func main() {
 	}
 
 	storage := postgres.NewStorageRepository(conn)
-	publisher, err := kafka.NewPublisher(appName, cfg)
-	if err != nil {
-		log.Fatal("app: publisher", zap.Error(err))
-	}
+	publisher := redis.NewPublisher(appName, cfg)
 
 	blockConfirmationUsecase := usecase.NewBlockConfirmationUsecase(cfg, rpc, storage, publisher, log.Named("confirmation"))
 	blockHandlingUsecase := usecase.NewBlockHandlingUsecase(cfg, rpc, storage, publisher, log.Named("handling"))

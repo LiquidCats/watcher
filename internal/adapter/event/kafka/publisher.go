@@ -3,11 +3,10 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"strings"
 	"watcher/configs"
 	"watcher/internal/app/domain/entity"
+	"watcher/internal/app/domain/utils"
 )
 
 type Publisher struct {
@@ -17,7 +16,7 @@ type Publisher struct {
 }
 
 func NewPublisher(appName string, cfg configs.Config) (*Publisher, error) {
-	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": cfg.Broadcaster.Host})
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": cfg.Kafka.Host})
 	if err != nil {
 		return nil, err
 	}
@@ -44,13 +43,8 @@ func (p *Publisher) sendMessage(topic string, data []byte) error {
 	return nil
 }
 
-func (p *Publisher) makeBlocksTopic(s ...string) string {
-	str := strings.Join(s, "-")
-	return fmt.Sprint(p.appName, ".blocks-", str)
-}
-
 func (p *Publisher) NewBlock(_ context.Context, blockchain entity.Blockchain, block *entity.Block) error {
-	topicName := p.makeBlocksTopic(string(blockchain), "new")
+	topicName := utils.MakeBlocksTopic(p.appName, blockchain, entity.BlockStatusNew)
 
 	data, err := json.Marshal(block)
 	if err != nil {
@@ -61,7 +55,7 @@ func (p *Publisher) NewBlock(_ context.Context, blockchain entity.Blockchain, bl
 }
 
 func (p *Publisher) ConfirmBlock(_ context.Context, blockchain entity.Blockchain, block *entity.Block) error {
-	topicName := p.makeBlocksTopic(string(blockchain), "confirm")
+	topicName := utils.MakeBlocksTopic(p.appName, blockchain, entity.BlockStatusConfirmed)
 
 	data, err := json.Marshal(block)
 	if err != nil {
@@ -72,7 +66,7 @@ func (p *Publisher) ConfirmBlock(_ context.Context, blockchain entity.Blockchain
 }
 
 func (p *Publisher) RejectBlock(_ context.Context, blockchain entity.Blockchain, block *entity.Block) error {
-	topicName := p.makeBlocksTopic(string(blockchain), "reject")
+	topicName := utils.MakeBlocksTopic(p.appName, blockchain, entity.BlockStatusRejected)
 
 	data, err := json.Marshal(block)
 	if err != nil {

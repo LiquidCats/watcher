@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  watcher:
+    image: golang:alpine
+    tty: true
+    working_dir: /app
+    command: go run cmd/watcher/main.go
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:alpine
+    restart: on-failure
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+     - "5432:5432"
+    environment:
+      POSTGRES_DB: watcher
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: postgres
+
+volumes:
+  postgres:
+  kafka:

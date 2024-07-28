@@ -1,12 +1,21 @@
 package entity
 
-type TransactionId string
-type TransactionHash string
-type TransactionBlockHash BlockHash
+type TxId string
+type Address string
 
 type Transaction struct {
-	ID          TransactionId
-	Hash        TransactionHash
-	BlockHash   BlockHash
-	BlockHeight BlockHeight
+	TxId      TxId
+	BlockHash BlockHash
+	Outputs   []*TransactionOutput
+	Inputs    []*TransactionInput
+}
+
+type TransactionOutput struct {
+	Address  Address
+	Value    uint64
+	Decimals uint64
+}
+
+type TransactionInput struct {
+	Address Address
 }

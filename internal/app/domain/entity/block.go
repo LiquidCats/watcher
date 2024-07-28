@@ -11,9 +11,3 @@ type Block struct {
 }
 
 const BlocksTopic = "blocks"
-
-const (
-	BlockStatusNew       BlockStatus = "new"
-	BlockStatusConfirmed BlockStatus = "confirmed"
-	BlockStatusRejected  BlockStatus = "rejected"
-)

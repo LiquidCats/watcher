@@ -1,9 +1,7 @@
 package null
 
 import (
-	"context"
-	"watcher/configs"
-	"watcher/internal/app/domain/entity"
+	"github.com/LiquidCats/watcher/v2/configs"
 )
 
 type Publisher struct {
@@ -11,16 +9,4 @@ type Publisher struct {
 
 func NewPublisher(_ configs.Config) *Publisher {
 	return &Publisher{}
-}
-
-func (p *Publisher) NewBlock(_ context.Context, blockchain entity.Blockchain, _ *entity.Block) error {
-	return nil
-}
-
-func (p *Publisher) ConfirmBlock(_ context.Context, blockchain entity.Blockchain, _ *entity.Block) error {
-	return nil
-}
-
-func (p *Publisher) RejectBlock(_ context.Context, blockchain entity.Blockchain, _ *entity.Block) error {
-	return nil
 }

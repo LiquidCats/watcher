@@ -1,12 +1,8 @@
 package redis
 
 import (
-	"context"
-	"encoding/json"
+	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/redis/go-redis/v9"
-	"watcher/configs"
-	"watcher/internal/app/domain/entity"
-	"watcher/internal/app/domain/utils"
 )
 
 type Publisher struct {
@@ -27,40 +23,4 @@ func NewPublisher(appName string, cfg configs.Config) *Publisher {
 		cfg:      cfg,
 		producer: rdb,
 	}
-}
-
-func (p *Publisher) NewBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error {
-	topic := utils.MakeBlocksTopic(p.appName, blockchain, entity.BlockStatusNew)
-	b, err := json.Marshal(block)
-	if err != nil {
-		return err
-	}
-
-	cmd := p.producer.Publish(ctx, topic, b)
-
-	return cmd.Err()
-}
-
-func (p *Publisher) ConfirmBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error {
-	topic := utils.MakeBlocksTopic(p.appName, blockchain, entity.BlockStatusConfirmed)
-	b, err := json.Marshal(block)
-	if err != nil {
-		return err
-	}
-
-	cmd := p.producer.Publish(ctx, topic, b)
-
-	return cmd.Err()
-}
-
-func (p *Publisher) RejectBlock(ctx context.Context, blockchain entity.Blockchain, block *entity.Block) error {
-	topic := utils.MakeBlocksTopic(p.appName, blockchain, entity.BlockStatusRejected)
-	b, err := json.Marshal(block)
-	if err != nil {
-		return err
-	}
-
-	cmd := p.producer.Publish(ctx, topic, b)
-
-	return cmd.Err()
 }

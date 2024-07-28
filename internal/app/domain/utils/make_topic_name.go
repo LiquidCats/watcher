@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"watcher/internal/app/domain/entity"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entity"
 )
 
 func MakeBlocksTopic(appName string, blockchain entity.Blockchain, status entity.BlockStatus) string {

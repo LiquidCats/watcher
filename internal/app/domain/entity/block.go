@@ -1,8 +1,10 @@
 package entity
 
-type BlockHash string
-type BlockHeight uint32
-type BlockStatus string
+type (
+	BlockHash   string
+	BlockHeight uint32
+	BlockStatus string
+)
 
 type Block struct {
 	Height   BlockHeight

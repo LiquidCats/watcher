@@ -1,22 +1,17 @@
 package configs
 
 import (
-	"github.com/LiquidCats/watcher/v2/internal/app/domain/entity"
+	"time"
+
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/shared/entities"
 )
 
 type Config struct {
-	Blockchain entity.Blockchain
-	NodeUrl    string      `envconfig:"NODE_URL"`
-	Kafka      KafkaConfig `envconfig:"KAFKA"`
-	Redis      RedisConfig `envconfig:"REDIS"`
-}
+	Drvier   entities.Driver
+	Interval time.Duration
 
-type KafkaConfig struct {
-	Host string
-}
+	Evm  Evm
+	Utxo Utxo
 
-type RedisConfig struct {
-	Host     string
-	Password string
-	DB       int
+	DB DB
 }

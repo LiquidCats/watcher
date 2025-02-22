@@ -3,11 +3,11 @@ package configs
 import (
 	"time"
 
-	"github.com/LiquidCats/watcher/v2/internal/app/domain/shared/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/kernel/entities"
 )
 
 type Config struct {
-	Drvier   entities.Driver
+	Driver   entities.Driver
 	Interval time.Duration
 
 	Evm  Evm

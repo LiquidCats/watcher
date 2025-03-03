@@ -28,7 +28,7 @@ func TestClient_GetMempool(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoNode{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
 
 	ctx := context.Background()
 
@@ -47,7 +47,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoNode{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
 
 	ctx := context.Background()
 
@@ -68,7 +68,7 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoNode{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
 
 	ctx := context.Background()
 
@@ -97,7 +97,7 @@ func TestClient_GetLatestBlockHash(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoNode{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
 
 	ctx := context.Background()
 

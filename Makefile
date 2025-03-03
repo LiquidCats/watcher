@@ -1,3 +1,7 @@
 .PHONY: generate-sql
 generate-sql:
-	sqlc generate
+	docker run --rm -v ${PWD}:/src -w /src sqlc/sqlc generate
+
+.PHONY: mock
+mock:
+	docker run --rm -i -v ${PWD}:/src -w /src vektra/mockery --dir=internal/app --output=test/mocks --all

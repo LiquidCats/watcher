@@ -1,4 +1,4 @@
-package adapter
+package rpc
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	entities2 "github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
 )
 
-type NodeClient[T any] interface {
+type Client interface {
 	GetMempool(ctx context.Context) ([]entities2.TxID, error)
 	GetLatestBlockHash(ctx context.Context) (entities2.BlockHash, error)
 	GetBlockByHash(ctx context.Context, hash entities2.BlockHash) (*data2.Block, error)

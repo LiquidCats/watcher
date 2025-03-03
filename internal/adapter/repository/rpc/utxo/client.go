@@ -11,10 +11,10 @@ import (
 )
 
 type Client struct {
-	cfg configs.UtxoNode
+	cfg configs.UtxoRpc
 }
 
-func NewClient(cfg configs.UtxoNode) *Client {
+func NewClient(cfg configs.UtxoRpc) *Client {
 	return &Client{
 		cfg: cfg,
 	}

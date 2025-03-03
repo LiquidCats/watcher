@@ -3,11 +3,11 @@ package configs
 import "time"
 
 type Utxo struct {
-	Node UtxoNode `yaml:"node" envconfig:"NODE"`
+	Rpc  UtxoRpc  `yaml:"rpc" envconfig:"RPC"`
 	Peer UtxoPeer `yaml:"peer" envconfig:"PEER"`
 }
 
-type UtxoNode struct {
+type UtxoRpc struct {
 	URL string `yaml:"url" envconfig:"URL"`
 }
 

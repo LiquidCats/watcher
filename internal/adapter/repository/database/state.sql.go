@@ -7,32 +7,23 @@ package database
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createState = `-- name: CreateState :exec
 INSERT INTO state (
-    key, value, created_at, updated_at
+    key, value
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2
  )
 `
 
 type CreateStateParams struct {
-	Key       string
-	Value     []byte
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	Key   string
+	Value []byte
 }
 
 func (q *Queries) CreateState(ctx context.Context, arg CreateStateParams) error {
-	_, err := q.db.Exec(ctx, createState,
-		arg.Key,
-		arg.Value,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	_, err := q.db.Exec(ctx, createState, arg.Key, arg.Value)
 	return err
 }
 
@@ -53,23 +44,16 @@ func (q *Queries) GetByKey(ctx context.Context, key string) (State, error) {
 }
 
 const updateState = `-- name: UpdateState :exec
-UPDATE state SET value = $2, created_at = $3, updated_at = $4
+UPDATE state SET value = $2, updated_at = current_timestamp
 WHERE key = $1
 `
 
 type UpdateStateParams struct {
-	Key       string
-	Value     []byte
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	Key   string
+	Value []byte
 }
 
 func (q *Queries) UpdateState(ctx context.Context, arg UpdateStateParams) error {
-	_, err := q.db.Exec(ctx, updateState,
-		arg.Key,
-		arg.Value,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	_, err := q.db.Exec(ctx, updateState, arg.Key, arg.Value)
 	return err
 }

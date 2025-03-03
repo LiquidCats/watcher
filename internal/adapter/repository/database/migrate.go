@@ -15,19 +15,18 @@ import (
 var migrations embed.FS
 
 func Migrate(conn *pgx.Conn) error {
-	// Create a new source driver using the embedded migrations.
-	// Note: The second argument must match the directory name within the embedded FS.
-	sourceDriver, err := iofs.New(migrations, "sql")
+	sourceDriver, err := iofs.New(migrations, "migrations")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "iofs")
 	}
 
 	dbConn := stdlib.OpenDB(*conn.Config())
+	defer dbConn.Close()
 
 	// Create a new pgx migration driver instance.
 	dbDriver, err := pgxmigrate.WithInstance(dbConn, &pgxmigrate.Config{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "pgxmigrate")
 	}
 
 	// Create the migrate instance using the source and database drivers.
@@ -36,12 +35,12 @@ func Migrate(conn *pgx.Conn) error {
 		"pgx", dbDriver,
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "migrate instance")
 	}
 
 	// Run the up migrations.
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return err
+		return errors.Wrap(err, "up")
 	}
 
 	return nil

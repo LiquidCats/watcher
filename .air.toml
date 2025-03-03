@@ -1,0 +1,19 @@
+# .air.toml
+
+root = "."
+
+[build]
+cmd = "go build -o ./tmp/main cmd/watcher/main.go"
+bin = "tmp/main"
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_dir = ["assets", "tmp", "vendor", "node_modules"]
+delay = 1000
+clear = true
+
+[log]
+time = true
+
+[color]
+main = "yellow"
+watcher = "cyan"
+build = "green"

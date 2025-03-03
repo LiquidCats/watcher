@@ -1,10 +1,10 @@
 x-app-env: &app-env
   GOMAXPROCS: 1
-  APP_POSTGRES_HOST: postgres
-  APP_POSTGRES_PORT: 5432
-  APP_POSTGRES_USER: watcher_db_user
-  APP_POSTGRES_PASSWORD: watcher_db_secret
-  APP_POSTGRES_DATABASE: watcher_db
+  WATCHER_DB_HOST: postgres
+  WATCHER_DB_PORT: 5432
+  WATCHER_DB_USER: watcher_db_user
+  WATCHER_DB_PASSWORD: watcher_db_secret
+  WATCHER_DB_DATABASE: watcher_db
 
 services:
   watcher:

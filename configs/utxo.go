@@ -2,12 +2,13 @@ package configs
 
 import "time"
 
-type Evm struct {
+type Utxo struct {
+	Node UtxoNode `yaml:"node" envconfig:"NODE"`
+	Peer UtxoPeer `yaml:"peer" envconfig:"PEER"`
 }
 
-type Utxo struct {
-	NodeUrl string   `yaml:"node_url" envconfig:"NODE_URL"`
-	Peer    UtxoPeer `yaml:"peer" envconfig:"PEER"`
+type UtxoNode struct {
+	URL string `yaml:"url" envconfig:"URL"`
 }
 
 type UtxoPeer struct {

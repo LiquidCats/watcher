@@ -1,17 +1,13 @@
 package configs
 
 import (
-	"time"
-
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
 )
 
 type Config struct {
-	Driver   entities.Driver
-	Interval time.Duration
+	Driver entities.Driver
 
-	Evm  Evm
 	Utxo Utxo
 
-	DB DB
+	DB DB `yaml:"db" envconfig:"DB"`
 }

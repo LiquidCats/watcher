@@ -9,30 +9,12 @@ import (
 	"context"
 )
 
-const createState = `-- name: CreateState :exec
-INSERT INTO state (
-    key, value
-) VALUES (
-    $1, $2
- )
-`
-
-type CreateStateParams struct {
-	Key   string
-	Value []byte
-}
-
-func (q *Queries) CreateState(ctx context.Context, arg CreateStateParams) error {
-	_, err := q.db.Exec(ctx, createState, arg.Key, arg.Value)
-	return err
-}
-
-const getByKey = `-- name: GetByKey :one
+const getStateByKey = `-- name: GetStateByKey :one
 select key, value, created_at, updated_at from state where key = $1
 `
 
-func (q *Queries) GetByKey(ctx context.Context, key string) (State, error) {
-	row := q.db.QueryRow(ctx, getByKey, key)
+func (q *Queries) GetStateByKey(ctx context.Context, key string) (State, error) {
+	row := q.db.QueryRow(ctx, getStateByKey, key)
 	var i State
 	err := row.Scan(
 		&i.Key,
@@ -43,17 +25,16 @@ func (q *Queries) GetByKey(ctx context.Context, key string) (State, error) {
 	return i, err
 }
 
-const updateState = `-- name: UpdateState :exec
-UPDATE state SET value = $2, updated_at = current_timestamp
-WHERE key = $1
+const setState = `-- name: SetState :exec
+INSERT INTO state (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = current_timestamp
 `
 
-type UpdateStateParams struct {
+type SetStateParams struct {
 	Key   string
 	Value []byte
 }
 
-func (q *Queries) UpdateState(ctx context.Context, arg UpdateStateParams) error {
-	_, err := q.db.Exec(ctx, updateState, arg.Key, arg.Value)
+func (q *Queries) SetState(ctx context.Context, arg SetStateParams) error {
+	_, err := q.db.Exec(ctx, setState, arg.Key, arg.Value)
 	return err
 }

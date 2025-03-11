@@ -7,7 +7,6 @@ import (
 )
 
 type StateDB interface {
-	CreateState(ctx context.Context, arg database.CreateStateParams) error
-	GetByKey(ctx context.Context, key string) (database.State, error)
-	UpdateState(ctx context.Context, arg database.UpdateStateParams) error
+	GetStateByKey(ctx context.Context, key string) (database.State, error)
+	SetState(ctx context.Context, arg database.SetStateParams) error
 }

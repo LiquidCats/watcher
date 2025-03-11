@@ -9,3 +9,7 @@ import (
 type TransactionPublisher interface {
 	PublishTransaction(ctx context.Context, transaction *entities.Transaction) error
 }
+
+type BlockPublisher interface {
+	PublishBlock(ctx context.Context, block *entities.Block) error
+}

@@ -10,6 +10,8 @@ WORKDIR /app
 
 COPY . .
 
+ENV GOFLAGS="-buildmode=pie"
+
 RUN go mod download
 RUN go build -o /app/main ./cmd/watcher
 
@@ -18,8 +20,9 @@ FROM scratch AS app
 
 WORKDIR /
 
+USER 65534
+
 # Copy the built binary from the build stage
-COPY --from=build /app/database/migrations database/migrations
 COPY --from=build /app/main main
 
 # Define the command to run the application

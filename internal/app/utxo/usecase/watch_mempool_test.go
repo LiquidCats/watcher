@@ -2,17 +2,15 @@ package usecase_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
+	"time"
 
 	"github.com/LiquidCats/watcher/v2/configs"
-	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
 	kernel "github.com/LiquidCats/watcher/v2/internal/app/utxo/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/utxo/usecase"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
-	"github.com/bytedance/sonic"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -22,12 +20,14 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		Driver: entities.DriverRPC,
 		Type:   entities.TypeUtxo,
 		Chain:  entities.ChainBitcoin,
+
+		PersistDuration: time.Hour,
 	}
-	stateDB := mocks.NewStateDB(t)
+	state := mocks.NewState[[]entities.TxID](t)
 	transactionPublisher := mocks.NewTransactionPublisher(t)
 	client := mocks.NewClient(t)
 
-	uc := usecase.NewWatchMempoolUseCase(cfg, stateDB, transactionPublisher, client)
+	uc := usecase.NewWatchMempoolUseCase(cfg, state, client, transactionPublisher)
 
 	newMempool := []entities.TxID{"tx1", "tx3"}
 	client.
@@ -50,36 +50,11 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		})).
 		Return(nil)
 
+	state.On("Get", mock.Anything, "rpc.utxo.bitcoin.mempool").Once().Return([]entities.TxID{}, nil)
+	state.On("Set", mock.Anything, "rpc.utxo.bitcoin.mempool", newMempool, cfg.PersistDuration).
+		Once().
+		Return(nil)
+
 	err := uc.Execute(context.Background())
-	require.NoError(t, err)
-}
-
-// TestWatchMempoolUseCase_Init tests a successful initialization by
-// simulating a stateDB that returns a pre-encoded mempool.
-func TestWatchMempoolUseCase_Init(t *testing.T) {
-	cfg := configs.App{
-		Driver: entities.DriverRPC,
-		Type:   entities.TypeUtxo,
-		Chain:  entities.ChainBitcoin,
-	}
-
-	stateDB := mocks.NewStateDB(t)
-	transactionPublisher := mocks.NewTransactionPublisher(t)
-	client := mocks.NewClient(t)
-
-	// Prepare an old mempool slice and encode it using sonic.
-	oldMempool := []entities.TxID{"tx1", "tx2"}
-	encoded, err := sonic.Marshal(oldMempool)
-	require.NoError(t, err)
-
-	// Expect stateDB.GetByKey to be called with the correct key.
-	stateKey := fmt.Sprint(cfg.Driver, ".", cfg.Type, ".", cfg.Chain, ".", "mempool")
-	stateDB.
-		On("GetByKey", mock.Anything, stateKey).
-		Return(database.State{Value: encoded}, nil)
-
-	uc := usecase.NewWatchMempoolUseCase(cfg, stateDB, transactionPublisher, client)
-
-	err = uc.Init(context.Background())
 	require.NoError(t, err)
 }

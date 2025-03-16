@@ -15,7 +15,7 @@ type BlockPublisher struct {
 }
 
 // PublishBlock provides a mock function with given fields: ctx, block
-func (_m *BlockPublisher) PublishBlock(ctx context.Context, block *entities.Block) error {
+func (_m *BlockPublisher) PublishBlock(ctx context.Context, block *entities.UtxoBlock) error {
 	ret := _m.Called(ctx, block)
 
 	if len(ret) == 0 {
@@ -23,7 +23,7 @@ func (_m *BlockPublisher) PublishBlock(ctx context.Context, block *entities.Bloc
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.Block) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *entities.UtxoBlock) error); ok {
 		r0 = rf(ctx, block)
 	} else {
 		r0 = ret.Error(0)

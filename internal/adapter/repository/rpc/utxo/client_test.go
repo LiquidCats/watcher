@@ -8,7 +8,7 @@ import (
 
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo"
-	entities2 "github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -54,9 +54,9 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	result, err := client.GetBlockByHash(ctx, "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506")
 	require.NoError(t, err)
 
-	assert.Equal(t, entities2.BlockHash("000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"), result.Hash)
+	assert.Equal(t, entities.BlockHash("000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"), result.Hash)
 	assert.NotEmpty(t, result.Tx)
-	assert.Equal(t, entities2.TxID("fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4"), result.Tx[1].Txid)
+	assert.Equal(t, entities.TxID("fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4"), result.Tx[1].Txid)
 	assert.Len(t, result.Tx, 4)
 }
 
@@ -75,18 +75,18 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 	result, err := client.GetTransactionByTxId(ctx, "18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e")
 	require.NoError(t, err)
 
-	assert.Equal(t, entities2.TxID("18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e"), result.Txid)
+	assert.Equal(t, entities.TxID("18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e"), result.Txid)
 
 	assert.NotEmpty(t, result.Vin)
 	assert.Len(t, result.Vin, 1)
 
-	assert.Equal(t, entities2.TxID("d5aa0a84cc4cdcfbb2ffb175abf638a45468fbf8eb9a2d1aa380e6e41ac1030b"), result.Vin[0].Txid)
+	assert.Equal(t, entities.TxID("d5aa0a84cc4cdcfbb2ffb175abf638a45468fbf8eb9a2d1aa380e6e41ac1030b"), result.Vin[0].Txid)
 
 	assert.NotEmpty(t, result.Vout)
 	assert.Len(t, result.Vout, 2)
 
-	assert.Equal(t, entities2.Address("bc1qxafjsnp2jez09t5um2xrlf6r8s2hw40jdp8wastu6q9tuht4gxhsqwag3z"), result.Vout[0].ScriptPubKey.Address)
-	assert.Equal(t, entities2.Address("bc1qhp80relrnr2kl2y2x4klxyullxt3zncyj9nd3c"), result.Vout[1].ScriptPubKey.Address)
+	assert.Equal(t, entities.Address("bc1qxafjsnp2jez09t5um2xrlf6r8s2hw40jdp8wastu6q9tuht4gxhsqwag3z"), result.Vout[0].ScriptPubKey.Address)
+	assert.Equal(t, entities.Address("bc1qhp80relrnr2kl2y2x4klxyullxt3zncyj9nd3c"), result.Vout[1].ScriptPubKey.Address)
 }
 
 func TestClient_GetLatestBlockHash(t *testing.T) {
@@ -104,5 +104,5 @@ func TestClient_GetLatestBlockHash(t *testing.T) {
 	result, err := client.GetLatestBlockHash(ctx)
 	require.NoError(t, err)
 
-	assert.Equal(t, entities2.BlockHash("000000000000000000012b7934bb0e26e4ebb12b62290c6407ad252e8d254ffc"), result)
+	assert.Equal(t, entities.BlockHash("000000000000000000012b7934bb0e26e4ebb12b62290c6407ad252e8d254ffc"), result)
 }

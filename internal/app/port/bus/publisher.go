@@ -7,9 +7,9 @@ import (
 )
 
 type TransactionPublisher interface {
-	PublishTransaction(ctx context.Context, transaction *entities.Transaction) error
+	PublishTransaction(ctx context.Context, transaction *entities.UtxoTransaction) error
 }
 
 type BlockPublisher interface {
-	PublishBlock(ctx context.Context, block *entities.Block) error
+	PublishBlock(ctx context.Context, block *entities.UtxoBlock) error
 }

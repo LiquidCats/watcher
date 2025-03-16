@@ -1,22 +1,22 @@
 package data
 
 import (
-	kernel "github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
+	entities2 "github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/utxo/domain/entities"
 	"github.com/shopspring/decimal"
 )
 
 type Transaction struct {
-	Txid          kernel.TxID       `json:"txid"`
-	Vin           []TransactionVin  `json:"vin"`
-	Vout          []TransactionVout `json:"vout"`
-	Fee           decimal.Decimal   `json:"fee"`
-	Confirmations uint16            `json:"confimations"`
-	Blockhash     kernel.BlockHash  `json:"blockhash,omitempty"`
+	Txid          entities2.TxID      `json:"txid"`
+	Vin           []TransactionVin    `json:"vin"`
+	Vout          []TransactionVout   `json:"vout"`
+	Fee           decimal.Decimal     `json:"fee"`
+	Confirmations uint16              `json:"confimations"`
+	Blockhash     entities2.BlockHash `json:"blockhash,omitempty"`
 }
 
-func (t *Transaction) ToEntity() *entities.Transaction {
-	ent := &entities.Transaction{
+func (t *Transaction) ToEntity() *entities.UtxoTransaction {
+	ent := &entities.UtxoTransaction{
 		TxID:      t.Txid,
 		BlockHash: t.Blockhash,
 		Inputs:    make([]*entities.Input, len(t.Vin)),
@@ -35,7 +35,7 @@ func (t *Transaction) ToEntity() *entities.Transaction {
 }
 
 type TransactionVin struct {
-	Txid        kernel.TxID             `json:"txid"`
+	Txid        entities2.TxID          `json:"txid"`
 	Vout        uint32                  `json:"vout"`
 	ScriptSig   TransactionVinScriptSig `json:"scriptSig"`
 	TxInWitness []string                `json:"txinwitness"`
@@ -69,5 +69,5 @@ func (to *TransactionVout) ToEntity() *entities.Output {
 }
 
 type TransactionVoutScriptPubKey struct {
-	Address kernel.Address `json:"address"`
+	Address entities2.Address `json:"address"`
 }

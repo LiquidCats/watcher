@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/LiquidCats/watcher/v2/configs"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/port/bus"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/port/state"
-	"github.com/LiquidCats/watcher/v2/internal/app/utxo/port/rpc"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
 	"github.com/go-faster/errors"
 	"github.com/rs/zerolog"
 )
@@ -16,14 +16,14 @@ import (
 type WatchMempoolUseCase struct {
 	cfg                  configs.App
 	state                state.State[[]entities.TxID]
-	rpcClient            rpc.Client
+	rpcClient            rpc.UtxoClient
 	transactionPublisher bus.TransactionPublisher
 }
 
 func NewWatchMempoolUseCase(
 	cfg configs.App,
 	state state.State[[]entities.TxID],
-	rpcClient rpc.Client,
+	rpcClient rpc.UtxoClient,
 	transactionPublisher bus.TransactionPublisher,
 ) *WatchMempoolUseCase {
 	return &WatchMempoolUseCase{

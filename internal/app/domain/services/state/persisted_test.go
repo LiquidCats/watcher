@@ -1,4 +1,4 @@
-package persisted_test
+package state_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
-	"github.com/LiquidCats/watcher/v2/internal/adapter/state/persisted"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/services/state"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
@@ -22,7 +22,7 @@ func TestState_Get(t *testing.T) {
 		UpdatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}, nil)
 
-	state := persisted.NewPersisterState[string](stateDB)
+	state := state.NewPersisterState[string](stateDB)
 
 	val, err := state.Get(ctx, "test")
 	require.NoError(t, err)
@@ -38,7 +38,7 @@ func TestState_Set(t *testing.T) {
 		Value: []byte(`"test_value"`),
 	}).Return(nil)
 
-	state := persisted.NewPersisterState[string](stateDB)
+	state := state.NewPersisterState[string](stateDB)
 
 	err := state.Set(ctx, "test", "test_value", time.Second)
 	require.NoError(t, err)

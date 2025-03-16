@@ -7,11 +7,10 @@ import (
 
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/port/bus"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/port/state"
-	kernel "github.com/LiquidCats/watcher/v2/internal/app/utxo/domain/entities"
-	"github.com/LiquidCats/watcher/v2/internal/app/utxo/port/rpc"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
 	"github.com/go-faster/errors"
 	"github.com/rs/zerolog"
 )
@@ -19,7 +18,7 @@ import (
 type WatchBlocksUseCase struct {
 	cfg                  configs.App
 	state                state.State[[]entities.BlockHash]
-	rpcClient            rpc.Client
+	rpcClient            rpc.UtxoClient
 	blockPublisher       bus.BlockPublisher
 	transactionPublisher bus.TransactionPublisher
 }
@@ -27,7 +26,7 @@ type WatchBlocksUseCase struct {
 func NewWatchBlocksUseCase(
 	cfg configs.App,
 	state state.State[[]entities.BlockHash],
-	rpcClient rpc.Client,
+	rpcClient rpc.UtxoClient,
 	blockPublisher bus.BlockPublisher,
 	transactionPublisher bus.TransactionPublisher,
 ) *WatchBlocksUseCase {
@@ -60,7 +59,7 @@ func (uc *WatchBlocksUseCase) Execute(ctx context.Context) error {
 		return nil
 	}
 
-	var blocks []*kernel.Block
+	var blocks []*entities.UtxoBlock
 
 	for {
 		block, err = uc.rpcClient.GetBlockByHash(ctx, blockHash)

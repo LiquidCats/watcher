@@ -5,7 +5,7 @@ import (
 
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
-	kernel "github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/pkg/jsonrpc"
 	"github.com/go-faster/errors"
 )
@@ -20,13 +20,13 @@ func NewClient(cfg configs.UtxoRpc) *Client {
 	}
 }
 
-func (c *Client) GetMempool(ctx context.Context) ([]kernel.TxID, error) {
+func (c *Client) GetMempool(ctx context.Context) ([]entities.TxID, error) {
 	req, err := jsonrpc.Prepare[any](ctx, c.cfg.URL, "getrawmempool", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetMempool: prepare")
 	}
 
-	resp, err := jsonrpc.Execute[[]kernel.TxID](req)
+	resp, err := jsonrpc.Execute[[]entities.TxID](req)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetMempool: execute")
 	}
@@ -34,13 +34,13 @@ func (c *Client) GetMempool(ctx context.Context) ([]kernel.TxID, error) {
 	return *resp, nil
 }
 
-func (c *Client) GetLatestBlockHash(ctx context.Context) (kernel.BlockHash, error) {
+func (c *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, error) {
 	req, err := jsonrpc.Prepare[any](ctx, c.cfg.URL, "getbestblockhash", nil)
 	if err != nil {
 		return "", errors.Wrap(err, "GetLatestBlockHash: prepare")
 	}
 
-	resp, err := jsonrpc.Execute[kernel.BlockHash](req)
+	resp, err := jsonrpc.Execute[entities.BlockHash](req)
 	if err != nil {
 		return "", errors.Wrap(err, "GetLatestBlockHash: execute")
 	}
@@ -48,7 +48,7 @@ func (c *Client) GetLatestBlockHash(ctx context.Context) (kernel.BlockHash, erro
 	return *resp, nil
 }
 
-func (c *Client) GetBlockByHash(ctx context.Context, hash kernel.BlockHash) (*data.Block, error) {
+func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (*data.Block, error) {
 	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getblockbyhash", []any{hash, 2})
 	if err != nil {
 		return nil, errors.Wrap(err, "GetBlockByHash: prepare")
@@ -62,7 +62,7 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash kernel.BlockHash) (*da
 	return resp, nil
 }
 
-func (c *Client) GetTransactionByTxId(ctx context.Context, hash kernel.TxID) (*data.Transaction, error) {
+func (c *Client) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (*data.Transaction, error) {
 	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getrawtransaction", []any{hash, 1})
 	if err != nil {
 		return nil, errors.Wrap(err, "GetBlockByHash: prepare")

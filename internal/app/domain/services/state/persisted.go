@@ -1,4 +1,4 @@
-package persisted
+package state
 
 import (
 	"context"
@@ -6,24 +6,24 @@ import (
 	"time"
 
 	database2 "github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/port/database"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/database"
 	"github.com/bytedance/sonic"
 	"github.com/go-faster/errors"
 )
 
-type State[T any] struct {
+type PersistedStateService[T any] struct {
 	persistedStorage database.StateDB
 	value            T
 	lastUpdated      time.Time
 }
 
-func NewPersisterState[T any](persistedStorage database.StateDB) *State[T] {
-	return &State[T]{
+func NewPersisterState[T any](persistedStorage database.StateDB) *PersistedStateService[T] {
+	return &PersistedStateService[T]{
 		persistedStorage: persistedStorage,
 	}
 }
 
-func (s *State[T]) Set(ctx context.Context, key string, value T, period time.Duration) error {
+func (s *PersistedStateService[T]) Set(ctx context.Context, key string, value T, period time.Duration) error {
 	s.value = value
 	if s.shouldPersist(period) {
 		valueBytes, err := sonic.Marshal(value)
@@ -43,7 +43,7 @@ func (s *State[T]) Set(ctx context.Context, key string, value T, period time.Dur
 	return nil
 }
 
-func (s *State[T]) shouldPersist(period time.Duration) bool {
+func (s *PersistedStateService[T]) shouldPersist(period time.Duration) bool {
 	var zero T
 	if reflect.DeepEqual(s.value, zero) {
 		return true
@@ -52,7 +52,7 @@ func (s *State[T]) shouldPersist(period time.Duration) bool {
 	return time.Since(s.lastUpdated) >= period
 }
 
-func (s *State[T]) Get(ctx context.Context, key string) (T, error) {
+func (s *PersistedStateService[T]) Get(ctx context.Context, key string) (T, error) {
 	var zero T
 	if !reflect.DeepEqual(s.value, zero) {
 		return s.value, nil

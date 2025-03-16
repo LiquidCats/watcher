@@ -3,7 +3,7 @@ package configs
 import (
 	"time"
 
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 )
 
 type App struct {

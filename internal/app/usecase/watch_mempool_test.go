@@ -7,9 +7,8 @@ import (
 
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
-	"github.com/LiquidCats/watcher/v2/internal/app/kernel/domain/entities"
-	kernel "github.com/LiquidCats/watcher/v2/internal/app/utxo/domain/entities"
-	"github.com/LiquidCats/watcher/v2/internal/app/utxo/usecase"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/usecase"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -41,11 +40,11 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		Return(&data.Transaction{Txid: "tx3"}, nil)
 
 	transactionPublisher.
-		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx *kernel.Transaction) bool {
+		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx *entities.UtxoTransaction) bool {
 			return tx.TxID == "tx1"
 		})).
 		Return(nil).
-		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx *kernel.Transaction) bool {
+		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx *entities.UtxoTransaction) bool {
 			return tx.TxID == "tx3"
 		})).
 		Return(nil)

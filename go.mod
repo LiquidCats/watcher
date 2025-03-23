@@ -3,13 +3,14 @@ module github.com/LiquidCats/watcher/v2
 go 1.24
 
 require (
-	github.com/bytedance/sonic v1.13.1
-	github.com/go-faster/errors v0.7.1
+	github.com/bytedance/sonic v1.13.2
 	github.com/golang-migrate/migrate/v4 v4.18.2
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/jackc/pgx/v5 v5.7.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9
-	github.com/rs/zerolog v1.33.0
+	github.com/pkg/errors v0.9.1
+	github.com/redis/go-redis/v9 v9.7.3
+	github.com/rs/zerolog v1.34.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/automaxprocs v1.6.0
@@ -23,8 +24,10 @@ require (
 
 require (
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect

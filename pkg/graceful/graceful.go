@@ -2,42 +2,43 @@ package graceful
 
 import (
 	"context"
-	"fmt"
-	"golang.org/x/sync/errgroup"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Runner func(ctx context.Context) error
 
-func Wait(runners ...Runner) error {
+func Signals(ctx context.Context) error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(sigs)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	group, ctx := errgroup.WithContext(ctx)
-
-	// Goroutine to handle OS signals
-	group.Go(func() error {
+	for {
 		select {
 		case <-sigs:
-			fmt.Println("Signal received, initiating shutdown")
-			cancel() // cancel the context
+			return nil
 		case <-ctx.Done():
 			return ctx.Err()
 		}
-		return nil
-	})
+	}
+}
+
+func WaitContext(ctx context.Context, runners ...Runner) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	group, ctx := errgroup.WithContext(ctx)
 
 	// Start a goroutine for each runner
 	for _, r := range runners {
-		runner := r // Capture the current value of r in a local variable
+		runner := r
 		group.Go(func() error {
-			return runner(ctx) // Use the captured variable here
+			return runner(ctx)
 		})
 	}
 
-	// Wait for all goroutines to complete
 	return group.Wait()
 }

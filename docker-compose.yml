@@ -1,35 +1,79 @@
-version: "3.8"
+x-app-env: &app-env
+  GOMAXPROCS: 1
+
+  WATCHER_DB_HOST: postgres
+  WATCHER_DB_PORT: 5432
+  WATCHER_DB_USER: watcher_db_user
+  WATCHER_DB_PASSWORD: watcher_db_secret
+  WATCHER_DB_DATABASE: watcher_db
+
+  WATCHER_REDIS_HOST: redis
+  WATCHER_REDIS_PORT: 6379
+  WATCHER_REDIS_DB: 0
+  WATCHER_REDIS_BLOCK_CHANNEL: btc-blocks
+  WATCHER_REDIS_TX_CHANNEL: btc-transactions
+  #
+  WATCHER_APP_DRIVER: "rpc"
+  WATCHER_APP_TYPE: "utxo"
+  WATCHER_APP_CHAIN: "bitcoin"
+
+  WATCHER_APP_SCAN_DEPTH: 144
+  WATCHER_APP_SCAN_INTERVAL: 10s
+  WATCHER_APP_PERSIST_BOCKS: 10
+  WATCHER_APP_PERSIST_DURATION: 1m
+
+  WATCHER_UTXO_RPC_URL: "http://btc:password@btc:8332/"
 
 services:
   watcher:
-    image: golang:alpine
-    tty: true
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
     working_dir: /app
-    command: go run cmd/watcher/main.go
-    env_file: .env
+    environment:
+      <<: *app-env
     volumes:
       - .:/app
     depends_on:
       - postgres
       - redis
-
+      - btc
+  postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: watcher_db_user
+      POSTGRES_PASSWORD: watcher_db_secret
+      POSTGRES_DB: watcher_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
-
-  postgres:
-    image: postgres:alpine
-    restart: on-failure
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - redis_data:/data
+  btc:
+    user: 1000:1000
+    image: lncm/bitcoind:v28.0
+    command:
+      - "-prune=550"
+      - "-maxuploadtarget=1440M"
+      - "-testnet4=1"
+      - "-rpcuser=btc"
+      - "-rpcpassword=password"
+      - "-rpcbind=0.0.0.0"
+      - "-rpcallowip=0.0.0.0/0"
+      - "-rpcport=8332"
     ports:
-     - "5432:5432"
-    environment:
-      POSTGRES_DB: watcher
-      POSTGRES_PASSWORD: secret
-      POSTGRES_USER: postgres
+      - "8332:8332"
+    volumes:
+      - btc:/data/.bitcoin
+    restart: on-failure
+    stop_grace_period: 15m30s
 
 volumes:
-  postgres:
-  kafka:
+  btc:
+  postgres_data:
+  redis_data:

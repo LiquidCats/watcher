@@ -1,9 +1,11 @@
-name: Go Build and Deploy
+name: Build
 
 on:
-  release:
-    types:
-      - created
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
 
 jobs:
   tests:
@@ -32,19 +34,22 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
+    - name: Build and push Docker image (tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ghcr.io/${{ steps.repository.outputs.lowercase }}:${{ github.event.release.tag_name }}
+        tags: ghcr.io/${{ steps.repository.outputs.lowercase }}:${{ github.ref_name }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
+    - name: Build and push Docker image (push)
+      if: startsWith(github.ref, 'refs/heads/main')
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ghcr.io/${{ steps.repository.outputs.lowercase }}:latest
-
+        tags: |
+          ghcr.io/${{ steps.repository.outputs.lowercase }}:${{ github.sha }}
+          ghcr.io/${{ steps.repository.outputs.lowercase }}:latest

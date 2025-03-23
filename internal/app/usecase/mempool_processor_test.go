@@ -18,15 +18,15 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 	cfg := configs.App{
 		Driver: entities.DriverRPC,
 		Type:   entities.TypeUtxo,
-		Chain:  entities.ChainBitcoin,
+		Chain:  "bitcoin",
 
 		PersistDuration: time.Hour,
 	}
 	state := mocks.NewState[[]entities.TxID](t)
 	transactionPublisher := mocks.NewTransactionPublisher(t)
-	client := mocks.NewClient(t)
+	client := mocks.NewUtxoClient(t)
 
-	uc := usecase.NewWatchMempoolUseCase(cfg, state, client, transactionPublisher)
+	uc := usecase.NewMempoolProcessor(cfg, state, client, transactionPublisher)
 
 	newMempool := []entities.TxID{"tx1", "tx3"}
 	client.
@@ -35,17 +35,17 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 
 	client.
 		On("GetTransactionByTxId", mock.Anything, entities.TxID("tx1")).
-		Return(&data.Transaction{Txid: "tx1"}, nil).
+		Return(&data.Transaction{TxID: "tx1"}, nil).
 		On("GetTransactionByTxId", mock.Anything, entities.TxID("tx3")).
-		Return(&data.Transaction{Txid: "tx3"}, nil)
+		Return(&data.Transaction{TxID: "tx3"}, nil)
 
 	transactionPublisher.
-		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx *entities.UtxoTransaction) bool {
-			return tx.TxID == "tx1"
+		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx entities.Transaction) bool {
+			return tx.GetTxID() == "tx1"
 		})).
 		Return(nil).
-		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx *entities.UtxoTransaction) bool {
-			return tx.TxID == "tx3"
+		On("PublishTransaction", mock.Anything, mock.MatchedBy(func(tx entities.Transaction) bool {
+			return tx.GetTxID() == "tx3"
 		})).
 		Return(nil)
 

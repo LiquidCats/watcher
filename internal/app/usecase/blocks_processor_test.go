@@ -19,7 +19,7 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 	cfg := configs.App{
 		Driver:          entities.DriverRPC,
 		Type:            entities.TypeUtxo,
-		Chain:           entities.ChainBitcoin,
+		Chain:           "bitcoin",
 		ScanDepth:       2,
 		PersistBocks:    6,
 		PersistDuration: time.Hour,
@@ -36,12 +36,12 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		PreviousBlockHash: "block0",
 		Tx: []*data.Transaction{
 			{
-				Txid:          "tx1",
+				TxID:          "tx1",
 				Vin:           nil,
 				Vout:          nil,
 				Fee:           decimal.RequireFromString("0.001"),
 				Confirmations: 1,
-				Blockhash:     "block1",
+				BlockHash:     "block1",
 			},
 		},
 	}
@@ -51,12 +51,12 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		PreviousBlockHash: "block1",
 		Tx: []*data.Transaction{
 			{
-				Txid:          "tx2",
+				TxID:          "tx2",
 				Vin:           nil,
 				Vout:          nil,
 				Fee:           decimal.RequireFromString("0.001"),
 				Confirmations: 2,
-				Blockhash:     "block2",
+				BlockHash:     "block2",
 			},
 		},
 	}
@@ -65,11 +65,11 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 	client.On("GetBlockByHash", mock.Anything, block2.Hash).Once().Return(block2, nil)
 	client.On("GetBlockByHash", mock.Anything, block1.Hash).Once().Return(block1, nil)
 
-	transactionPublisher.On("PublishTransaction", mock.Anything, block1.Tx[0].ToEntity()).Once().Return(nil)
-	blockPublisher.On("PublishBlock", mock.Anything, block1.ToEntity()).Once().Return(nil)
+	transactionPublisher.On("PublishTransaction", mock.Anything, block1.Tx[0]).Once().Return(nil)
+	blockPublisher.On("PublishBlock", mock.Anything, block1).Once().Return(nil)
 
-	transactionPublisher.On("PublishTransaction", mock.Anything, block2.Tx[0].ToEntity()).Once().Return(nil)
-	blockPublisher.On("PublishBlock", mock.Anything, block2.ToEntity()).Once().Return(nil)
+	transactionPublisher.On("PublishTransaction", mock.Anything, block2.Tx[0]).Once().Return(nil)
+	blockPublisher.On("PublishBlock", mock.Anything, block2).Once().Return(nil)
 
 	state.On("Get", mock.Anything, "rpc.utxo.bitcoin.blocks").Once().Return([]entities.BlockHash{
 		block1.PreviousBlockHash,
@@ -84,7 +84,7 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		block2.Hash,
 	}, cfg.PersistDuration).Once().Return(nil)
 
-	uc := usecase.NewWatchBlocksUseCase(cfg, state, client, blockPublisher, transactionPublisher)
+	uc := usecase.NewBlocksProcessor(cfg, state, client, blockPublisher, transactionPublisher)
 
 	err := uc.Execute(context.Background())
 	require.NoError(t, err)

@@ -2,13 +2,16 @@ package utxo_test
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo"
+	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/pkg/jsonrpc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,6 +25,15 @@ const (
 
 func TestClient_GetMempool(t *testing.T) {
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rpcReq jsonrpc.RPCRequest[any]
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&rpcReq); err != nil {
+			require.NoError(t, err)
+		}
+
+		assert.Equal(t, "getrawmempool", rpcReq.Method)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(rawMempoolResponse))
@@ -41,6 +53,15 @@ func TestClient_GetMempool(t *testing.T) {
 
 func TestClient_GetBlockByHash(t *testing.T) {
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rpcReq jsonrpc.RPCRequest[any]
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&rpcReq); err != nil {
+			require.NoError(t, err)
+		}
+
+		assert.Equal(t, "getblock", rpcReq.Method)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(blockResponse))
@@ -51,17 +72,29 @@ func TestClient_GetBlockByHash(t *testing.T) {
 
 	ctx := context.Background()
 
-	result, err := client.GetBlockByHash(ctx, "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506")
+	r, err := client.GetBlockByHash(ctx, "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506")
 	require.NoError(t, err)
+
+	result, ok := r.(*data.Block)
+	require.True(t, ok)
 
 	assert.Equal(t, entities.BlockHash("000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506"), result.Hash)
 	assert.NotEmpty(t, result.Tx)
-	assert.Equal(t, entities.TxID("fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4"), result.Tx[1].Txid)
+	assert.Equal(t, entities.TxID("fff2525b8931402dd09222c50775608f75787bd2b87e56995a7bdd30f79702c4"), result.Tx[1].TxID)
 	assert.Len(t, result.Tx, 4)
 }
 
 func TestClient_GetTransactionByTxId(t *testing.T) {
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rpcReq jsonrpc.RPCRequest[any]
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&rpcReq); err != nil {
+			require.NoError(t, err)
+		}
+
+		assert.Equal(t, "getrawtransaction", rpcReq.Method)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(transactionResponse))
@@ -72,10 +105,12 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 
 	ctx := context.Background()
 
-	result, err := client.GetTransactionByTxId(ctx, "18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e")
+	r, err := client.GetTransactionByTxId(ctx, "18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e")
 	require.NoError(t, err)
+	result, ok := r.(*data.Transaction)
+	require.True(t, ok)
 
-	assert.Equal(t, entities.TxID("18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e"), result.Txid)
+	assert.Equal(t, entities.TxID("18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e"), result.TxID)
 
 	assert.NotEmpty(t, result.Vin)
 	assert.Len(t, result.Vin, 1)
@@ -91,6 +126,15 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 
 func TestClient_GetLatestBlockHash(t *testing.T) {
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var rpcReq jsonrpc.RPCRequest[any]
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&rpcReq); err != nil {
+			require.NoError(t, err)
+		}
+
+		assert.Equal(t, "getbestblockhash", rpcReq.Method)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(bestblockResponse))

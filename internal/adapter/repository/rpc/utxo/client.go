@@ -7,7 +7,7 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/pkg/jsonrpc"
-	"github.com/go-faster/errors"
+	"github.com/pkg/errors"
 )
 
 type Client struct {
@@ -48,8 +48,8 @@ func (c *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, er
 	return *resp, nil
 }
 
-func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (*data.Block, error) {
-	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getblockbyhash", []any{hash, 2})
+func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
+	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getblock", []any{hash, 2})
 	if err != nil {
 		return nil, errors.Wrap(err, "GetBlockByHash: prepare")
 	}
@@ -62,8 +62,8 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (*
 	return resp, nil
 }
 
-func (c *Client) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (*data.Transaction, error) {
-	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getrawtransaction", []any{hash, 1})
+func (c *Client) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
+	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getrawtransaction", []any{hash, 2})
 	if err != nil {
 		return nil, errors.Wrap(err, "GetBlockByHash: prepare")
 	}

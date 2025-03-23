@@ -7,6 +7,10 @@ const (
 	DriverP2P Driver = "p2p"
 )
 
+func (d Driver) Equals(drv Driver) bool {
+	return d == drv
+}
+
 type Type string
 
 const (
@@ -14,9 +18,8 @@ const (
 	TypeUtxo Type = "utxo"
 )
 
-type Chain string
+func (t Type) Equals(typ Type) bool {
+	return t == typ
+}
 
-const (
-	ChainBitcoin  Chain = "bitcoin"
-	ChainEthereum Chain = "ethereum"
-)
+type Chain string

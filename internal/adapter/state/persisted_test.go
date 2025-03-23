@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
-	"github.com/LiquidCats/watcher/v2/internal/app/domain/services/state"
+	"github.com/LiquidCats/watcher/v2/internal/adapter/state"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
@@ -17,17 +17,17 @@ func TestState_Get(t *testing.T) {
 	stateDB := mocks.NewStateDB(t)
 	stateDB.On("GetStateByKey", ctx, "test").Return(database.State{
 		Key:       "test",
-		Value:     []byte(`"test_value"`),
+		Value:     []byte(`["test_value"]`),
 		CreatedAt: pgtype.Timestamp{Time: time.Now().Add(-(time.Hour * 24)), Valid: true},
 		UpdatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}, nil)
 
-	state := state.NewPersisterState[string](stateDB)
+	st := state.NewPersisterState[string](stateDB)
 
-	val, err := state.Get(ctx, "test")
+	val, err := st.Get(ctx, "test")
 	require.NoError(t, err)
 
-	require.Equal(t, "test_value", val)
+	require.Equal(t, "test_value", val[0])
 }
 
 func TestState_Set(t *testing.T) {
@@ -35,11 +35,11 @@ func TestState_Set(t *testing.T) {
 	stateDB := mocks.NewStateDB(t)
 	stateDB.On("SetState", ctx, database.SetStateParams{
 		Key:   "test",
-		Value: []byte(`"test_value"`),
+		Value: []byte(`["test_value"]`),
 	}).Return(nil)
 
-	state := state.NewPersisterState[string](stateDB)
+	st := state.NewPersisterState[string](stateDB)
 
-	err := state.Set(ctx, "test", "test_value", time.Second)
+	err := st.Set(ctx, "test", []string{"test_value"}, time.Second)
 	require.NoError(t, err)
 }

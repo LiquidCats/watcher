@@ -73,11 +73,11 @@ func (_m *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, e
 }
 
 // GetTransactionByTxId provides a mock function with given fields: ctx, hash
-func (_m *Client) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
+func (_m *Client) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
 	ret := _m.Called(ctx, hash)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetTransactionByTxId")
+		panic("no return value specified for GetTransactionByTxID")
 	}
 
 	var r0 entities.Transaction

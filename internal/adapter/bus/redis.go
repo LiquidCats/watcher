@@ -33,7 +33,7 @@ func (p *RedisPublisher) pub(ctx context.Context, channel string, data any) erro
 		return errors.Wrap(err, "marshal data")
 	}
 
-	if err := p.redis.Publish(ctx, channel, dataBytes).Err(); err != nil {
+	if err = p.redis.Publish(ctx, channel, dataBytes).Err(); err != nil {
 		return errors.Wrap(err, "publish message")
 	}
 

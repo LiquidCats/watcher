@@ -1,7 +1,6 @@
 package state_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func TestState_Get(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	stateDB := mocks.NewStateDB(t)
 	stateDB.On("GetStateByKey", ctx, "test").Return(database.State{
 		Key:       "test",
@@ -31,7 +30,7 @@ func TestState_Get(t *testing.T) {
 }
 
 func TestState_Set(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	stateDB := mocks.NewStateDB(t)
 	stateDB.On("SetState", ctx, database.SetStateParams{
 		Key:   "test",

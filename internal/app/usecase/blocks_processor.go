@@ -88,11 +88,11 @@ func (uc *BlocksProcessor) Execute(ctx context.Context) error {
 
 	for _, block := range blocks {
 		for _, tx := range block.GetTransactions() {
-			if err := uc.transactionPublisher.PublishTransaction(ctx, tx); err != nil {
+			if err = uc.transactionPublisher.PublishTransaction(ctx, tx); err != nil {
 				logger.Error().Err(err).Any("txid", tx.GetTxID()).Msg("publish transaction")
 			}
 		}
-		if err := uc.blockPublisher.PublishBlock(ctx, block); err != nil {
+		if err = uc.blockPublisher.PublishBlock(ctx, block); err != nil {
 			logger.Error().Err(err).Any("hash", block.GetHash()).Msg("publish transaction")
 		}
 
@@ -104,7 +104,7 @@ func (uc *BlocksProcessor) Execute(ctx context.Context) error {
 			blocksState = append(blocksState, block.GetHash())
 		}
 
-		if err := uc.state.Set(
+		if err = uc.state.Set(
 			ctx,
 			uc.getStateKey(),
 			blocksState,

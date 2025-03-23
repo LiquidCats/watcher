@@ -103,11 +103,11 @@ func (_m *UtxoClient) GetMempool(ctx context.Context) ([]entities.TxID, error) {
 }
 
 // GetTransactionByTxId provides a mock function with given fields: ctx, hash
-func (_m *UtxoClient) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
+func (_m *UtxoClient) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
 	ret := _m.Called(ctx, hash)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetTransactionByTxId")
+		panic("no return value specified for GetTransactionByTxID")
 	}
 
 	var r0 entities.Transaction

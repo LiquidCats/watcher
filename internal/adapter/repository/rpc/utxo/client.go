@@ -11,10 +11,10 @@ import (
 )
 
 type Client struct {
-	cfg configs.UtxoRpc
+	cfg configs.UtxoRPC
 }
 
-func NewClient(cfg configs.UtxoRpc) *Client {
+func NewClient(cfg configs.UtxoRPC) *Client {
 	return &Client{
 		cfg: cfg,
 	}
@@ -62,7 +62,7 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (e
 	return resp, nil
 }
 
-func (c *Client) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
+func (c *Client) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
 	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "getrawtransaction", []any{hash, 2})
 	if err != nil {
 		return nil, errors.Wrap(err, "GetBlockByHash: prepare")

@@ -38,7 +38,7 @@ func main() {
 
 	conn, err := pgx.Connect(ctx, cfg.DB.ToDSN())
 	defer func() {
-		if err := conn.Close(ctx); err != nil {
+		if err = conn.Close(ctx); err != nil {
 			logger.Fatal().Stack().Err(err).Msg("close connection")
 		}
 	}()
@@ -46,7 +46,7 @@ func main() {
 		logger.Fatal().Stack().Err(err).Msg("connect to database")
 	}
 
-	if err := database.Migrate(conn); err != nil {
+	if err = database.Migrate(conn); err != nil {
 		logger.Fatal().Stack().Err(err).Msg("migrate")
 	}
 
@@ -62,7 +62,7 @@ func main() {
 
 	switch cfg.App.Type {
 	case entities.TypeUtxo:
-		client := utxo.NewClient(cfg.Utxo.Rpc)
+		client := utxo.NewClient(cfg.Utxo.RPC)
 
 		mempoolUseCase := usecase.NewMempoolProcessor(cfg.App, transactionState, client, publisher)
 		blocksUseCase := usecase.NewBlocksProcessor(cfg.App, blocksState, client, publisher, publisher)
@@ -76,7 +76,7 @@ func main() {
 	}
 
 	logger.Info().Msg("starting application")
-	if err := graceful.WaitContext(ctx, runners...); err != nil {
+	if err = graceful.WaitContext(ctx, runners...); err != nil {
 		logger.Fatal().Err(err).Msg("application terminated")
 	}
 

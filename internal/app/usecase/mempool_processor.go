@@ -73,7 +73,9 @@ func (uc *MempoolProcessor) Execute(ctx context.Context) error {
 	logger.Info().Any("diff_len", len(diff)).Msg("found new transactions")
 
 	for _, txID := range diff {
-		tx, err := uc.rpcClient.GetTransactionByTxId(ctx, txID)
+		var tx entities.Transaction
+
+		tx, err = uc.rpcClient.GetTransactionByTxID(ctx, txID)
 		if err != nil {
 			logger.Error().
 				Ctx(ctx).
@@ -83,7 +85,7 @@ func (uc *MempoolProcessor) Execute(ctx context.Context) error {
 			continue
 		}
 
-		if err := uc.transactionPublisher.PublishTransaction(ctx, tx); err != nil {
+		if err = uc.transactionPublisher.PublishTransaction(ctx, tx); err != nil {
 			logger.Error().
 				Ctx(ctx).
 				Err(err).
@@ -95,9 +97,7 @@ func (uc *MempoolProcessor) Execute(ctx context.Context) error {
 
 	logger.Info().Any("diff_len", len(diff)).Msg("transactions published")
 
-	diff = []entities.TxID{}
-
-	if err := uc.state.Set(
+	if err = uc.state.Set(
 		ctx,
 		uc.getStateKey(),
 		newMempool,

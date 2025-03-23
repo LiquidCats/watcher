@@ -1,7 +1,6 @@
 package usecase_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -34,9 +33,9 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		Return(newMempool, nil)
 
 	client.
-		On("GetTransactionByTxId", mock.Anything, entities.TxID("tx1")).
+		On("GetTransactionByTxID", mock.Anything, entities.TxID("tx1")).
 		Return(&data.Transaction{TxID: "tx1"}, nil).
-		On("GetTransactionByTxId", mock.Anything, entities.TxID("tx3")).
+		On("GetTransactionByTxID", mock.Anything, entities.TxID("tx3")).
 		Return(&data.Transaction{TxID: "tx3"}, nil)
 
 	transactionPublisher.
@@ -54,6 +53,6 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		Once().
 		Return(nil)
 
-	err := uc.Execute(context.Background())
+	err := uc.Execute(t.Context())
 	require.NoError(t, err)
 }

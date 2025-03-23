@@ -1,7 +1,6 @@
 package usecase_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -86,6 +85,6 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 
 	uc := usecase.NewBlocksProcessor(cfg, state, client, blockPublisher, transactionPublisher)
 
-	err := uc.Execute(context.Background())
+	err := uc.Execute(t.Context())
 	require.NoError(t, err)
 }

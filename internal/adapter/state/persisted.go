@@ -35,7 +35,7 @@ func (s *PersistedStateService[T]) Set(ctx context.Context, key string, value []
 			return err
 		}
 
-		if err := s.persistedStorage.SetState(ctx, database2.SetStateParams{
+		if err = s.persistedStorage.SetState(ctx, database2.SetStateParams{
 			Key:   key,
 			Value: valueBytes,
 		}); err != nil {
@@ -50,7 +50,7 @@ func (s *PersistedStateService[T]) Set(ctx context.Context, key string, value []
 }
 
 func (s *PersistedStateService[T]) shouldPersist(period time.Duration) bool {
-	if s.value == nil || len(s.value) == 0 {
+	if s.value == nil {
 		return true
 	}
 
@@ -75,7 +75,7 @@ func (s *PersistedStateService[T]) Get(ctx context.Context, key string) ([]T, er
 
 	var value []T
 
-	if err := sonic.Unmarshal(state.Value, &value); err != nil {
+	if err = sonic.Unmarshal(state.Value, &value); err != nil {
 		return nil, errors.Wrap(err, "failed to decode state")
 	}
 

@@ -1,7 +1,6 @@
 package utxo_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +28,7 @@ func TestClient_GetMempool(t *testing.T) {
 		decoder := json.NewDecoder(r.Body)
 
 		if err := decoder.Decode(&rpcReq); err != nil {
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}
 
 		assert.Equal(t, "getrawmempool", rpcReq.Method)
@@ -40,9 +39,9 @@ func TestClient_GetMempool(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	result, err := client.GetMempool(ctx)
 	require.NoError(t, err)
@@ -57,7 +56,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 		decoder := json.NewDecoder(r.Body)
 
 		if err := decoder.Decode(&rpcReq); err != nil {
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}
 
 		assert.Equal(t, "getblock", rpcReq.Method)
@@ -68,9 +67,9 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	r, err := client.GetBlockByHash(ctx, "000000000003ba27aa200b1cecaad478d2b00432346c3f1f3986da1afd33e506")
 	require.NoError(t, err)
@@ -90,7 +89,7 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 		decoder := json.NewDecoder(r.Body)
 
 		if err := decoder.Decode(&rpcReq); err != nil {
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}
 
 		assert.Equal(t, "getrawtransaction", rpcReq.Method)
@@ -101,11 +100,11 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
 
-	ctx := context.Background()
+	ctx := t.Context()
 
-	r, err := client.GetTransactionByTxId(ctx, "18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e")
+	r, err := client.GetTransactionByTxID(ctx, "18dfd1e6734f66cffa0524f9acb7b4c400ed8a5694680ea8ba4b9b24bb57635e")
 	require.NoError(t, err)
 	result, ok := r.(*data.Transaction)
 	require.True(t, ok)
@@ -130,7 +129,7 @@ func TestClient_GetLatestBlockHash(t *testing.T) {
 		decoder := json.NewDecoder(r.Body)
 
 		if err := decoder.Decode(&rpcReq); err != nil {
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}
 
 		assert.Equal(t, "getbestblockhash", rpcReq.Method)
@@ -141,9 +140,9 @@ func TestClient_GetLatestBlockHash(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRpc{URL: api.URL})
+	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	result, err := client.GetLatestBlockHash(ctx)
 	require.NoError(t, err)

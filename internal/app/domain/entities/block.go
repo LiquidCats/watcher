@@ -1,7 +1,9 @@
 package entities
 
-type BlockHeight uint64
-type BlockHash string
+type (
+	BlockHeight uint64
+	BlockHash   string
+)
 
 type Block interface {
 	GetHeight() BlockHeight

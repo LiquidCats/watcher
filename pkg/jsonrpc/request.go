@@ -40,7 +40,7 @@ func Execute[Result any](request *Request) (*Result, error) {
 
 	var result RPCResponse[Result]
 
-	if err := decoder.Decode(&result); err != nil {
+	if err = decoder.Decode(&result); err != nil {
 		return nil, errors.Wrap(err, "decode response")
 	}
 

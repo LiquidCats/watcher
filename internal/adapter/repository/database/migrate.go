@@ -3,12 +3,12 @@ package database
 import (
 	"embed"
 
-	"github.com/go-faster/errors"
 	"github.com/golang-migrate/migrate/v4"
 	pgxmigrate "github.com/golang-migrate/migrate/v4/database/pgx/v5"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/pkg/errors"
 )
 
 //go:embed migrations/*.sql

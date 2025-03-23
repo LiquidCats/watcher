@@ -5,9 +5,7 @@ package mocks
 import (
 	context "context"
 
-	data "github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	entities "github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
-
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -17,23 +15,23 @@ type UtxoClient struct {
 }
 
 // GetBlockByHash provides a mock function with given fields: ctx, hash
-func (_m *UtxoClient) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (*data.Block, error) {
+func (_m *UtxoClient) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
 	ret := _m.Called(ctx, hash)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetBlockByHash")
 	}
 
-	var r0 *data.Block
+	var r0 entities.Block
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entities.BlockHash) (*data.Block, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.BlockHash) (entities.Block, error)); ok {
 		return rf(ctx, hash)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entities.BlockHash) *data.Block); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.BlockHash) entities.Block); ok {
 		r0 = rf(ctx, hash)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*data.Block)
+			r0 = ret.Get(0).(entities.Block)
 		}
 	}
 
@@ -105,23 +103,23 @@ func (_m *UtxoClient) GetMempool(ctx context.Context) ([]entities.TxID, error) {
 }
 
 // GetTransactionByTxId provides a mock function with given fields: ctx, hash
-func (_m *UtxoClient) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (*data.Transaction, error) {
+func (_m *UtxoClient) GetTransactionByTxId(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
 	ret := _m.Called(ctx, hash)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetTransactionByTxId")
 	}
 
-	var r0 *data.Transaction
+	var r0 entities.Transaction
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, entities.TxID) (*data.Transaction, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TxID) (entities.Transaction, error)); ok {
 		return rf(ctx, hash)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, entities.TxID) *data.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TxID) entities.Transaction); ok {
 		r0 = rf(ctx, hash)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*data.Transaction)
+			r0 = ret.Get(0).(entities.Transaction)
 		}
 	}
 

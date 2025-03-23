@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	entities "github.com/LiquidCats/watcher/v2/internal/app/utxo/domain/entities"
+	entities "github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -15,7 +15,7 @@ type BlockPublisher struct {
 }
 
 // PublishBlock provides a mock function with given fields: ctx, block
-func (_m *BlockPublisher) PublishBlock(ctx context.Context, block *entities.UtxoBlock) error {
+func (_m *BlockPublisher) PublishBlock(ctx context.Context, block entities.Block) error {
 	ret := _m.Called(ctx, block)
 
 	if len(ret) == 0 {
@@ -23,7 +23,7 @@ func (_m *BlockPublisher) PublishBlock(ctx context.Context, block *entities.Utxo
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.UtxoBlock) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Block) error); ok {
 		r0 = rf(ctx, block)
 	} else {
 		r0 = ret.Error(0)

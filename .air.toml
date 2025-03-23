@@ -1,12 +1,14 @@
 # .air.toml
 
-root = "."
+root = "/app"
 
 [build]
-cmd = "go build -o ./tmp/main cmd/watcher/main.go"
-bin = "tmp/main"
+cmd = "go build -race -o /app/tmp/main cmd/watcher/main.go"
+bin = "/app/tmp/main"
 include_ext = ["go", "tpl", "tmpl", "html"]
 exclude_dir = ["assets", "tmp", "vendor", "node_modules"]
+# Exclude specific regular expressions.
+exclude_regex = ["_test\\.go"]
 delay = 1000
 clear = true
 
@@ -14,6 +16,8 @@ clear = true
 time = true
 
 [color]
-main = "yellow"
+# Customize each part's color. If no color found, use the raw app log.
+main = "magenta"
 watcher = "cyan"
-build = "green"
+build = "yellow"
+runner = "green"

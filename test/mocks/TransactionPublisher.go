@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	entities "github.com/LiquidCats/watcher/v2/internal/app/utxo/domain/entities"
+	entities "github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -15,7 +15,7 @@ type TransactionPublisher struct {
 }
 
 // PublishTransaction provides a mock function with given fields: ctx, transaction
-func (_m *TransactionPublisher) PublishTransaction(ctx context.Context, transaction *entities.UtxoTransaction) error {
+func (_m *TransactionPublisher) PublishTransaction(ctx context.Context, transaction entities.Transaction) error {
 	ret := _m.Called(ctx, transaction)
 
 	if len(ret) == 0 {
@@ -23,7 +23,7 @@ func (_m *TransactionPublisher) PublishTransaction(ctx context.Context, transact
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entities.UtxoTransaction) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.Transaction) error); ok {
 		r0 = rf(ctx, transaction)
 	} else {
 		r0 = ret.Error(0)

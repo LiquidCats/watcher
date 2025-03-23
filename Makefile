@@ -4,4 +4,4 @@ generate-sql:
 
 .PHONY: mock
 mock:
-	docker run --rm -i -v ${PWD}:/src -w /src vektra/mockery --dir=internal/app --output=test/mocks --all
+	docker run --rm -i -v ${PWD}:/src -w /src vektra/mockery --dir=internal/app/port --output=test/mocks --all

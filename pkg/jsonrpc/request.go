@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/bytedance/sonic"
-	"github.com/go-faster/errors"
+	"github.com/pkg/errors"
 )
 
 type Request = http.Request
@@ -42,6 +42,10 @@ func Execute[Result any](request *Request) (*Result, error) {
 
 	if err := decoder.Decode(&result); err != nil {
 		return nil, errors.Wrap(err, "decode response")
+	}
+
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
 	return &result.Result, nil

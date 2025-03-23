@@ -9,10 +9,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	gracefulCtx, gracefulCancel = context.WithCancel(context.Background())
-)
-
 type Runner func(ctx context.Context) error
 
 func Signals(ctx context.Context) error {
@@ -30,15 +26,11 @@ func Signals(ctx context.Context) error {
 	}
 }
 
-// WithContext allows setting a custom context for the graceful shutdown.
-func WithContext(ctx context.Context) {
-	gracefulCtx, gracefulCancel = context.WithCancel(ctx)
-}
+func WaitContext(ctx context.Context, runners ...Runner) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-func Wait(runners ...Runner) error {
-	defer gracefulCancel()
-
-	group, ctx := errgroup.WithContext(gracefulCtx)
+	group, ctx := errgroup.WithContext(ctx)
 
 	// Start a goroutine for each runner
 	for _, r := range runners {

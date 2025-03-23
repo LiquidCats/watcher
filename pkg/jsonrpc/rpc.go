@@ -1,6 +1,9 @@
 package jsonrpc
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type RPCResponse[D any] struct {
 	JSONRPC string    `json:"jsonrpc"`
@@ -12,6 +15,10 @@ type RPCResponse[D any] struct {
 type RPCError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+}
+
+func (e *RPCError) Error() string {
+	return fmt.Sprintf("jsonrpc error: code=%d, message=%s", e.Code, e.Message)
 }
 
 type RPCRequest[P any] struct {

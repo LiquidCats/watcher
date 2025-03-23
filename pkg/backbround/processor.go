@@ -12,23 +12,24 @@ type Job interface {
 	Execute(ctx context.Context) error
 }
 
-func RunOnBackground(
+func BackgroundRunner(
 	name string,
 	interval time.Duration,
 	job Job,
 ) graceful.Runner {
+	timer := time.NewTicker(interval)
+
 	return func(ctx context.Context) error {
+		defer timer.Stop()
+
 		logger := zerolog.Ctx(ctx)
 
-		logger.Info().Msgf("backbround processor [%s] started", name)
-		defer logger.Info().Msgf("backbround processor [%s] stopped", name)
-
-		timer := time.NewTimer(interval)
-		defer timer.Stop()
+		logger.Info().Msgf("backbround processor [name: %s] started", name)
+		defer logger.Info().Msgf("backbround processor [name: %s] stopped", name)
 
 		for {
 			if err := job.Execute(ctx); err != nil {
-				logger.Error().Err(err).Msgf("backbround processor [%s] failed", name)
+				logger.Error().Stack().Err(err).Stack().Msgf("backbround processor [name: %s] failed", name)
 			}
 
 			select {

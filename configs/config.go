@@ -5,4 +5,6 @@ type Config struct {
 	Utxo Utxo `yaml:"utxo" envconfig:"UTXO"`
 
 	DB DB `yaml:"db" envconfig:"DB"`
+
+	Redis Redis `yaml:"redis" envconfig:"REDIS"`
 }

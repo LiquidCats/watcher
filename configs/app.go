@@ -11,7 +11,9 @@ type App struct {
 	Type   entities.Type   `yaml:"type" envconfig:"TYPE"`
 	Chain  entities.Chain  `yaml:"chain" envconfig:"CHAIN"`
 
-	ScanDepth       int           `yaml:"scan_depth" envconfig:"SCAN_DEPTH"`
+	ScanDepth    int           `yaml:"scan_depth" envconfig:"SCAN_DEPTH"`
+	ScanInterval time.Duration `yaml:"scan_interval" envconfig:"SCAN_INTERVAL"`
+
 	PersistBocks    int           `yaml:"persist_bocks" envconfig:"PERSIST_BOCKS"`
 	PersistDuration time.Duration `yaml:"persist_duration" envconfig:"PERSIST_DURATION"`
 }

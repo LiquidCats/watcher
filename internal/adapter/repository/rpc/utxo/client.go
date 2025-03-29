@@ -3,10 +3,10 @@ package utxo
 import (
 	"context"
 
+	"github.com/LiquidCats/jsonrpc"
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
-	"github.com/LiquidCats/watcher/v2/pkg/jsonrpc"
 	"github.com/pkg/errors"
 )
 

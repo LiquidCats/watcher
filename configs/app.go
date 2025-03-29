@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
@@ -16,4 +17,8 @@ type App struct {
 
 	PersistBocks    int           `yaml:"persist_bocks" envconfig:"PERSIST_BOCKS"`
 	PersistDuration time.Duration `yaml:"persist_duration" envconfig:"PERSIST_DURATION"`
+}
+
+func (app App) Key(k string) string {
+	return fmt.Sprintf("%s.%s.%s.%s", app.Type, app.Driver, app.Chain, k)
 }

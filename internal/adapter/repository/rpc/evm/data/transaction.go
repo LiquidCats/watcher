@@ -15,7 +15,7 @@ type Transaction struct {
 	TransactionIndex string             `json:"transactionIndex"`
 	Value            string             `json:"value"`
 	Type             string             `json:"type"`
-	ChainId          string             `json:"chainId"`
+	ChainID          string             `json:"chainId"`
 	V                string             `json:"v"`
 	R                string             `json:"r"`
 	S                string             `json:"s"`

@@ -10,12 +10,11 @@ import (
 type HexUint64 string
 
 func (x HexUint64) Uint64() uint64 {
-	v := string(x)
-	if strings.HasPrefix(v, "0x") {
-		v = strings.TrimPrefix(v, "0x")
-	}
-
-	i, _ := strconv.ParseUint(v, 16, 64)
+	i, _ := strconv.ParseUint(
+		strings.TrimPrefix(string(x), "0x"),
+		16,
+		64,
+	)
 
 	return i
 }

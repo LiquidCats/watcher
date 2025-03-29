@@ -2,7 +2,6 @@ package evm_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,7 +43,6 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	ctx := t.Context()
 
 	r, err := client.GetBlockByHash(ctx, "0xa2330de84ec75919db70f4b33e658cb1a9fa34557ad0082c7db87f075c96d6d2")
-	fmt.Printf("%+v\n", r)
 	require.NoError(t, err)
 
 	result, ok := r.(*data.Block)

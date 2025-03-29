@@ -4,15 +4,16 @@ import (
 	"context"
 	"os"
 
+	"github.com/LiquidCats/graceful"
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/bus"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
+	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/evm"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/state"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/usecase"
 	"github.com/LiquidCats/watcher/v2/pkg/backbround"
-	"github.com/LiquidCats/watcher/v2/pkg/graceful"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 
@@ -60,19 +61,41 @@ func main() {
 		graceful.Signals,
 	)
 
+	var blocksUseCase *usecase.BlocksProcessor
+	var mempoolUseCase *usecase.MempoolProcessor
+
 	switch cfg.App.Type {
 	case entities.TypeUtxo:
 		client := utxo.NewClient(cfg.Utxo.RPC)
 
-		mempoolUseCase := usecase.NewMempoolProcessor(cfg.App, transactionState, client, publisher)
-		blocksUseCase := usecase.NewBlocksProcessor(cfg.App, blocksState, client, publisher, publisher)
-
-		runners = append(runners,
-			backbround.BackgroundRunner("utxo.rpc.blocks", cfg.App.ScanInterval, blocksUseCase),
-			backbround.BackgroundRunner("utxo.rpc.mempool", cfg.App.ScanInterval, mempoolUseCase),
-		)
+		blocksUseCase = usecase.NewBlocksProcessor(cfg.App, blocksState, client, publisher, publisher)
+		mempoolUseCase = usecase.NewMempoolProcessor(cfg.App, transactionState, client, publisher)
 	case entities.TypeEvm:
-		logger.Fatal().Msg("not implemented yet")
+		client := evm.NewClient(cfg.Evm.RPC)
+
+		blocksUseCase = usecase.NewBlocksProcessor(cfg.App, blocksState, client, publisher, publisher)
+	}
+
+	if blocksUseCase != nil {
+		runners = append(
+			runners,
+			backbround.BackgroundRunner(
+				cfg.App.Key("blocks"),
+				cfg.App.ScanInterval,
+				blocksUseCase,
+			),
+		)
+	}
+
+	if mempoolUseCase != nil {
+		runners = append(
+			runners,
+			backbround.BackgroundRunner(
+				cfg.App.Key("mempool"),
+				cfg.App.ScanInterval,
+				mempoolUseCase,
+			),
+		)
 	}
 
 	logger.Info().Msg("starting application")

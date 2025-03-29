@@ -1,8 +1,9 @@
 module github.com/LiquidCats/watcher/v2
 
-go 1.24
+go 1.24.1
 
 require (
+	github.com/LiquidCats/jsonrpc v0.0.1
 	github.com/bytedance/sonic v1.13.2
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/jackc/pgx/v5 v5.7.3
@@ -14,7 +15,6 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/automaxprocs v1.6.0
-	golang.org/x/sync v0.12.0
 )
 
 require (
@@ -23,11 +23,16 @@ require (
 )
 
 require (
+	github.com/LiquidCats/graceful v0.0.1
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
+)
+
+require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect
@@ -41,6 +46,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

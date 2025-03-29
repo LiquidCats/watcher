@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/LiquidCats/watcher/v2/pkg/graceful"
+	"github.com/LiquidCats/graceful"
 	"github.com/rs/zerolog"
 )
 

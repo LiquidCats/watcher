@@ -1,6 +1,10 @@
 package configs
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/LiquidCats/watcher/v2/pkg/docker"
+)
 
 type DB struct {
 	Driver   string `yaml:"driver" envconfig:"DRIVER" default:"postgres"`
@@ -12,11 +16,13 @@ type DB struct {
 }
 
 func (d *DB) ToDSN() string {
+	pwd, _ := docker.GetSecret(d.Password)
+
 	return fmt.Sprintf(
 		"%s://%s:%s@%s:%s/%s?sslmode=disable",
 		d.Driver,
 		d.User,
-		d.Password,
+		pwd,
 		d.Host,
 		d.Port,
 		d.Database,

@@ -34,7 +34,10 @@ func NewPersister[T any](persistedStorage database.StateDB) *Persister[T] {
 
 func (p *Persister[T]) Set(ctx context.Context, key string, value []T, period time.Duration) error {
 	// Load the current snapshot
-	oldH := p.data.Load().(stateData[T])
+	oldH, ok := p.data.Load().(stateData[T])
+	if !ok {
+		return errors.New("persisted state not loaded")
+	}
 
 	h := stateData[T]{
 		value:       value,
@@ -48,7 +51,7 @@ func (p *Persister[T]) Set(ctx context.Context, key string, value []T, period ti
 		if err != nil {
 			return err
 		}
-		if err := p.persistedStorage.SetState(ctx, db.SetStateParams{
+		if err = p.persistedStorage.SetState(ctx, db.SetStateParams{
 			Key:   key,
 			Value: data,
 		}); err != nil {
@@ -64,7 +67,11 @@ func (p *Persister[T]) Set(ctx context.Context, key string, value []T, period ti
 
 func (p *Persister[T]) Get(ctx context.Context, key string) ([]T, error) {
 	// Fast path: if we already have something in memory, just return it
-	h := p.data.Load().(stateData[T])
+	h, ok := p.data.Load().(stateData[T])
+	if !ok {
+		return nil, errors.New("persisted state not loaded")
+	}
+
 	if len(h.value) != 0 {
 		return h.value, nil
 	}

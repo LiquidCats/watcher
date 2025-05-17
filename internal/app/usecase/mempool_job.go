@@ -16,20 +16,20 @@ type MempoolJob struct {
 	cfg       configs.App
 	state     state.State[entities.TxID]
 	rpcClient rpc.Client
-	txIdCh    runner.ChanWrite[entities.TxID]
+	txIDCh    runner.ChanWrite[entities.TxID]
 }
 
 func NewMempoolJob(
 	cfg configs.App,
 	state state.State[entities.TxID],
 	rpcClient rpc.Client,
-	txIdCh runner.ChanWrite[entities.TxID],
+	txIDCh runner.ChanWrite[entities.TxID],
 ) *MempoolJob {
 	return &MempoolJob{
 		cfg:       cfg,
 		state:     state,
 		rpcClient: rpcClient,
-		txIdCh:    txIdCh,
+		txIDCh:    txIDCh,
 	}
 }
 
@@ -76,7 +76,7 @@ func (uc *MempoolJob) Handle(ctx context.Context) error {
 	logger.Info().Any("diff_len", len(diff)).Msg("found new transactions")
 
 	for _, txID := range diff {
-		uc.txIdCh <- txID
+		uc.txIDCh <- txID
 	}
 
 	if err = uc.state.Set(

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"testing"
 
@@ -12,9 +11,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
-// --- Mock Handler ---
+// --- Mock Handler ---.
 type MockHandler[T any] struct {
 	mock.Mock
 	mu     sync.Mutex
@@ -29,7 +29,7 @@ func (m *MockHandler[T]) Handle(ctx context.Context, v T) error {
 	return args.Error(0)
 }
 
-// --- Helper to create logger in context and capture output ---
+// --- Helper to create logger in context and capture output ---.
 func loggerToBuf() (*zerolog.Logger, *bytes.Buffer) {
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).With().Timestamp().Logger()
@@ -53,7 +53,7 @@ func TestWorker_Run(t *testing.T) {
 			name: "all jobs handled, two workers, channel close",
 			channelSetup: func() chan int {
 				ch := make(chan int, 3)
-				for i := 0; i < 3; i++ {
+				for i := range 3 {
 					ch <- i
 				}
 				close(ch)
@@ -87,7 +87,7 @@ func TestWorker_Run(t *testing.T) {
 			name: "multiple workers handle all jobs",
 			channelSetup: func() chan int {
 				ch := make(chan int, 10)
-				for i := 0; i < 10; i++ {
+				for i := range 10 {
 					ch <- i
 				}
 				close(ch)
@@ -107,11 +107,10 @@ func TestWorker_Run(t *testing.T) {
 				close(ch)
 				return ch
 			},
-			handlerSetup: func(m *MockHandler[int]) {},
-			workers:      2,
-			wantErr:      nil,
-			wantHandled:  []int{},
-			wantInLog:    []string{"runner channel closed"},
+			workers:     2,
+			wantErr:     nil,
+			wantHandled: []int{},
+			wantInLog:   []string{"runner channel closed"},
 		},
 	}
 
@@ -122,7 +121,7 @@ func TestWorker_Run(t *testing.T) {
 			tt.handlerSetup(handler)
 
 			logger, buf := loggerToBuf()
-			ctx := logger.WithContext(context.Background())
+			ctx := logger.WithContext(t.Context())
 			var cancel context.CancelFunc
 
 			if tt.cancelCtx {
@@ -135,9 +134,9 @@ func TestWorker_Run(t *testing.T) {
 
 			// Assert error (if expected)
 			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr, "unexpected error value")
+				require.ErrorIs(t, err, tt.wantErr, "unexpected error value")
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			// Assert handled values (regardless of order, since workers may race)
 			assert.ElementsMatch(t, tt.wantHandled, handler.Values)
@@ -146,7 +145,7 @@ func TestWorker_Run(t *testing.T) {
 			if len(tt.wantInLog) > 0 {
 				logStr := buf.String()
 				for _, substr := range tt.wantInLog {
-					assert.Contains(t, logStr, substr, fmt.Sprintf("expected log to contain: %q", substr))
+					assert.Contains(t, logStr, substr, "expected log to contain: %q", substr)
 				}
 			}
 		})

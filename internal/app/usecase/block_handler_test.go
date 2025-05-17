@@ -1,7 +1,6 @@
 package usecase_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -16,7 +15,7 @@ import (
 )
 
 func TestBlockHandler_Handle(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	cfg := configs.App{
 		Driver:          entities.DriverRPC,
 		Type:            entities.TypeUtxo,

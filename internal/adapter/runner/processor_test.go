@@ -25,7 +25,7 @@ func TestProcessor_Run(t *testing.T) {
 				job := mocks.NewMockJob(t)
 				job.On("Handle", mock.Anything).Return(nil)
 
-				ctx := context.Background()
+				ctx := t.Context()
 
 				processor := runner.NewProcessor("test", 10*time.Millisecond, job)
 
@@ -48,7 +48,7 @@ func TestProcessor_Run(t *testing.T) {
 				testErr := errors.New("job error")
 				job.On("Handle", mock.Anything).Return(testErr)
 
-				ctx := context.Background()
+				ctx := t.Context()
 
 				processor := runner.NewProcessor("errjob", 10*time.Millisecond, job)
 
@@ -68,7 +68,7 @@ func TestProcessor_Run(t *testing.T) {
 				job := mocks.NewMockJob(t)
 				job.On("Handle", mock.Anything).Return(nil)
 
-				ctx := context.Background()
+				ctx := t.Context()
 
 				processor := runner.NewProcessor("cancelled", 100*time.Millisecond, job)
 

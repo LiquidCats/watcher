@@ -1,7 +1,6 @@
 package usecase_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
@@ -13,7 +12,7 @@ import (
 )
 
 func TestTransactionHandler_Handle(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	tx := &data.Transaction{
 		TxID:          "tx_hash_1",
 		Vin:           nil,
@@ -31,5 +30,4 @@ func TestTransactionHandler_Handle(t *testing.T) {
 
 	err := uc.Handle(ctx, tx)
 	require.NoError(t, err)
-
 }

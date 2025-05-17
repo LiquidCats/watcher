@@ -25,7 +25,7 @@ func NewWorker[T any](workersCount uint, workerCh runner.ChanRead[T], handler ru
 func (w *Worker[T]) Run(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
-	for i := 0; i < int(w.workersCount); i++ {
+	for range w.workersCount {
 		g.Go(func() error {
 			return w.runner(ctx)
 		})

@@ -20,7 +20,12 @@ type BlockHandler struct {
 	transactionCh runner.ChanWrite[entities.Transaction]
 }
 
-func NewBlockHandler(cfg configs.App, blockPub bus.BlockPublisher, state state.State[entities.BlockHash], transactionCh runner.ChanWrite[entities.Transaction]) *BlockHandler {
+func NewBlockHandler(
+	cfg configs.App,
+	blockPub bus.BlockPublisher,
+	state state.State[entities.BlockHash],
+	transactionCh runner.ChanWrite[entities.Transaction],
+) *BlockHandler {
 	return &BlockHandler{
 		cfg:           cfg,
 		blockPub:      blockPub,

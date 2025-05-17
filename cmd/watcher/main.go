@@ -21,6 +21,10 @@ import (
 )
 
 const app = "watcher"
+const (
+	TransactionChannelCap = 10000
+	BlocksChannelCap      = 1000
+)
 
 func main() {
 	logger := zerolog.New(os.Stdout).
@@ -60,23 +64,23 @@ func main() {
 	blocksState := state.NewPersister[entities.BlockHash](databaseAdapter)
 	transactionState := state.NewPersister[entities.TxID](databaseAdapter)
 
-	transactionChan := make(chan entities.Transaction, 10000)
+	transactionChan := make(chan entities.Transaction, TransactionChannelCap)
 	defer close(transactionChan)
 
-	blockChan := make(chan entities.Block, 1000)
+	blockChan := make(chan entities.Block, BlocksChannelCap)
 	defer close(blockChan)
 
-	txIdHashChan := make(chan entities.TxID, 10000)
-	defer close(txIdHashChan)
+	txIDChan := make(chan entities.TxID, TransactionChannelCap)
+	defer close(txIDChan)
 
 	blocksUseCase := usecase.NewBlocksJob(cfg.App, blocksState, rpcAdapter, blockChan)
-	mempoolUseCase := usecase.NewMempoolJob(cfg.App, transactionState, rpcAdapter, txIdHashChan)
+	mempoolUseCase := usecase.NewMempoolJob(cfg.App, transactionState, rpcAdapter, txIDChan)
 
 	txIDHandler := usecase.NewTxIDHandler(rpcAdapter, transactionChan)
 	blockHandler := usecase.NewBlockHandler(cfg.App, publisherAdapter, blocksState, transactionChan)
 	transactionHandler := usecase.NewTransactionHandler(publisherAdapter)
 
-	txIDWorker := runner.NewWorker(cfg.App.TxIDWorkerCount, txIdHashChan, txIDHandler)
+	txIDWorker := runner.NewWorker(cfg.App.TxIDWorkerCount, txIDChan, txIDHandler)
 	transactionWorker := runner.NewWorker(cfg.App.TransactionWorkerCount, transactionChan, transactionHandler)
 	blockWorker := runner.NewWorker(cfg.App.BlockWorkerCount, blockChan, blockHandler)
 

@@ -8,10 +8,10 @@ import (
 	"github.com/go-faster/errors"
 )
 
-const secretPrefix = "/dev/secrets/"
+const prefix = "/dev/secrets/"
 
 func GetSecret(name string) (string, error) {
-	if strings.HasPrefix(name, secretPrefix) {
+	if strings.HasPrefix(name, prefix) {
 		file, err := os.OpenFile(name, os.O_RDONLY, 0600)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to open secret file")

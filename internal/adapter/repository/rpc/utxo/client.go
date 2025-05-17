@@ -7,7 +7,7 @@ import (
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
-	"github.com/pkg/errors"
+	"github.com/go-faster/errors"
 )
 
 type Client struct {

@@ -7,7 +7,7 @@ import (
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/bytedance/sonic"
-	"github.com/pkg/errors"
+	"github.com/go-faster/errors"
 	"github.com/redis/go-redis/v9"
 )
 

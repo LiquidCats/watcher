@@ -13,7 +13,7 @@ import (
 
 func TestState_Get(t *testing.T) {
 	ctx := t.Context()
-	stateDB := mocks.NewStateDB(t)
+	stateDB := mocks.NewMockStateDB(t)
 	stateDB.On("GetStateByKey", ctx, "test").Return(database.State{
 		Key:       "test",
 		Value:     []byte(`["test_value"]`),
@@ -21,7 +21,7 @@ func TestState_Get(t *testing.T) {
 		UpdatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}, nil)
 
-	st := state.NewPersisterState[string](stateDB)
+	st := state.NewPersister[string](stateDB)
 
 	val, err := st.Get(ctx, "test")
 	require.NoError(t, err)
@@ -31,13 +31,13 @@ func TestState_Get(t *testing.T) {
 
 func TestState_Set(t *testing.T) {
 	ctx := t.Context()
-	stateDB := mocks.NewStateDB(t)
+	stateDB := mocks.NewMockStateDB(t)
 	stateDB.On("SetState", ctx, database.SetStateParams{
 		Key:   "test",
 		Value: []byte(`["test_value"]`),
 	}).Return(nil)
 
-	st := state.NewPersisterState[string](stateDB)
+	st := state.NewPersister[string](stateDB)
 
 	err := st.Set(ctx, "test", []string{"test_value"}, time.Second)
 	require.NoError(t, err)

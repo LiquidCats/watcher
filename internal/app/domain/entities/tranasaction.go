@@ -1,6 +1,9 @@
 package entities
 
-type TxID string
+type (
+	TxID           string
+	RawTransaction string
+)
 
 type Transaction interface {
 	GetTxID() TxID

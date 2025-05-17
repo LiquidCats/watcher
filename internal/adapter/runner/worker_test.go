@@ -107,10 +107,11 @@ func TestWorker_Run(t *testing.T) {
 				close(ch)
 				return ch
 			},
-			workers:     2,
-			wantErr:     nil,
-			wantHandled: []int{},
-			wantInLog:   []string{"runner channel closed"},
+			handlerSetup: func(_ *MockHandler[int]) {},
+			workers:      2,
+			wantErr:      nil,
+			wantHandled:  []int{},
+			wantInLog:    []string{"runner channel closed"},
 		},
 	}
 

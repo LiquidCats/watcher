@@ -10,6 +10,7 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/usecase"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
 	"github.com/shopspring/decimal"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -24,10 +25,8 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		PersistDuration: time.Hour,
 	}
 
-	state := mocks.NewState[[]entities.BlockHash](t)
-	transactionPublisher := mocks.NewTransactionPublisher(t)
-	blockPublisher := mocks.NewBlockPublisher(t)
-	client := mocks.NewClient(t)
+	state := mocks.NewMockState[entities.BlockHash](t)
+	client := mocks.NewMockClient(t)
 
 	block1 := &data.Block{
 		Hash:              "block1",
@@ -60,31 +59,21 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		},
 	}
 
+	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.blocks").Once().Return(nil, nil)
 	client.On("GetLatestBlockHash", mock.Anything).Once().Return(block2.Hash, nil)
 	client.On("GetBlockByHash", mock.Anything, block2.Hash).Once().Return(block2, nil)
 	client.On("GetBlockByHash", mock.Anything, block1.Hash).Once().Return(block1, nil)
 
-	transactionPublisher.On("PublishTransaction", mock.Anything, block1.Tx[0]).Once().Return(nil)
-	blockPublisher.On("PublishBlock", mock.Anything, block1).Once().Return(nil)
+	testCh := make(chan entities.Block, 2)
+	defer close(testCh)
 
-	transactionPublisher.On("PublishTransaction", mock.Anything, block2.Tx[0]).Once().Return(nil)
-	blockPublisher.On("PublishBlock", mock.Anything, block2).Once().Return(nil)
+	uc := usecase.NewBlocksJob(cfg, state, client, testCh)
 
-	state.On("Get", mock.Anything, "rpc.utxo.bitcoin.blocks").Once().Return([]entities.BlockHash{
-		block1.PreviousBlockHash,
-	}, nil)
-	state.On("Set", mock.Anything, "rpc.utxo.bitcoin.blocks", []entities.BlockHash{
-		block1.PreviousBlockHash,
-		block1.Hash,
-	}, cfg.PersistDuration).Once().Return(nil)
-	state.On("Set", mock.Anything, "rpc.utxo.bitcoin.blocks", []entities.BlockHash{
-		block1.PreviousBlockHash,
-		block1.Hash,
-		block2.Hash,
-	}, cfg.PersistDuration).Once().Return(nil)
-
-	uc := usecase.NewBlocksProcessor(cfg, state, client, blockPublisher, transactionPublisher)
-
-	err := uc.Execute(t.Context())
+	err := uc.Handle(t.Context())
 	require.NoError(t, err)
+
+	b1, b2 := <-testCh, <-testCh
+
+	assert.Equal(t, block1.GetHash(), b1.GetHash())
+	assert.Equal(t, block2.GetHash(), b2.GetHash())
 }

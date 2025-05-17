@@ -7,7 +7,7 @@ import (
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/evm/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
-	"github.com/pkg/errors"
+	"github.com/go-faster/errors"
 )
 
 type Client struct {
@@ -20,7 +20,7 @@ func NewClient(cfg configs.EvmRPC) *Client {
 	}
 }
 
-func (c Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, error) {
+func (c *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, error) {
 	req, err := jsonrpc.Prepare[any](ctx, c.cfg.URL, "eth_getBlockByNumber", []any{"latest", false})
 	if err != nil {
 		return "", errors.Wrap(err, "prepare get latest block hash")
@@ -34,7 +34,7 @@ func (c Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, err
 	return block.Hash, nil
 }
 
-func (c Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
+func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
 	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "eth_getBlockByHash", []any{hash, true})
 	if err != nil {
 		return nil, errors.Wrapf(err, "prepare get block by hash %s", hash)
@@ -48,7 +48,7 @@ func (c Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (en
 	return block, nil
 }
 
-func (c Client) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
+func (c *Client) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {
 	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.URL, "eth_getTransactionByHash", []any{hash})
 	if err != nil {
 		return nil, errors.Wrapf(err, "prepare get block by hash %s", hash)
@@ -60,4 +60,8 @@ func (c Client) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (e
 	}
 
 	return tx, nil
+}
+
+func (c *Client) GetMempool(_ context.Context) ([]entities.TxID, error) {
+	return nil, nil
 }

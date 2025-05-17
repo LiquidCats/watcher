@@ -1,5 +1,5 @@
 # Specify the Go version
-ARG GO_VERSION=1.24
+ARG GO_VERSION=1.24.3
 
 # Use a Go image with the specified version for the build stage
 FROM golang:${GO_VERSION}-alpine AS build

@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"encoding/base64"
 	"io"
 	"os"
 	"strings"
@@ -25,7 +26,14 @@ func GetSecret(name string) (string, error) {
 			return "", errors.Wrap(err, "failed to read secret file")
 		}
 
-		return string(buff), nil
+		var decodedBuff []byte
+
+		_, err = base64.StdEncoding.Decode(decodedBuff, buff)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to decode secret")
+		}
+
+		return string(decodedBuff), nil
 	}
 
 	return name, nil

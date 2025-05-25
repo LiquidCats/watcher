@@ -49,7 +49,7 @@ linters:
     - nilnesserr
     - nilnil
     - noctx
-    - nolintlint
+#    - nolintlint
     - nonamedreturns
     - nosprintfhostport
     - perfsprint

@@ -13,7 +13,7 @@ import (
 const prefix = "/run/secrets/"
 
 func GetSecret(name string) (string, error) {
-	fmt.Printf("%#v", name)
+	fmt.Printf("%#v\n", name) //nolint
 
 	if strings.HasPrefix(name, prefix) {
 		file, err := os.OpenFile(name, os.O_RDONLY, 0600)
@@ -29,7 +29,7 @@ func GetSecret(name string) (string, error) {
 			return "", errors.Wrap(err, "failed to read secret file")
 		}
 
-		fmt.Printf("%#v", string(buff))
+		fmt.Printf("%#v\n", string(buff)) //nolint
 
 		var decodedBuff []byte
 
@@ -38,7 +38,7 @@ func GetSecret(name string) (string, error) {
 			return "", errors.Wrap(err, "failed to decode secret")
 		}
 
-		fmt.Printf("%#v", string(decodedBuff))
+		fmt.Printf("%#v\n", string(decodedBuff)) //nolint
 
 		return string(decodedBuff), nil
 	}

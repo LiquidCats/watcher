@@ -40,7 +40,7 @@ func main() {
 		logger.Fatal().Stack().Err(err).Msg("failed to load config")
 	}
 
-	conn, err := pgx.Connect(ctx, cfg.DB.ToDSN(&logger))
+	conn, err := pgx.Connect(ctx, cfg.DB.ToDSN())
 	defer func() {
 		if err = conn.Close(ctx); err != nil {
 			logger.Fatal().Stack().Err(err).Msg("close connection")

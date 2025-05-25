@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/LiquidCats/watcher/v2/pkg/docker"
-	"github.com/rs/zerolog"
 )
 
 type DB struct {
@@ -16,9 +15,8 @@ type DB struct {
 	Password string `yaml:"password" envconfig:"PASSWORD"`
 }
 
-func (d *DB) ToDSN(logger *zerolog.Logger) string {
-	pwd, err := docker.GetSecret(d.Password)
-	logger.Fatal().Err(err).Msg("cant get db password from file")
+func (d *DB) ToDSN() string {
+	pwd, _ := docker.GetSecret(d.Password)
 
 	return fmt.Sprintf(
 		"%s://%s:%s@%s:%s/%s?sslmode=disable",

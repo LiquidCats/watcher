@@ -1,28 +1,23 @@
-# Specify the Go version
-ARG GO_VERSION=1.24.3
+FROM golang:1.24.2-alpine AS build
 
-# Use a Go image with the specified version for the build stage
-FROM golang:${GO_VERSION}-alpine AS build
-
-ENV CGO_ENABLED=0
+RUN apk update --no-cache ca-certificates
 
 WORKDIR /app
 
-COPY . .
+ADD ./ /app
 
-ENV GOFLAGS="-buildmode=pie"
+ENV CGO_ENABLED=0
 
-RUN apk update --no-cache ca-certificates
 RUN go mod download
-RUN go build -o /app/main ./cmd/watcher
+RUN go build -o main ./cmd/upgrader/main.go
 
-# Start from scratch for the final image
-FROM scratch AS app
+FROM scratch
 
 WORKDIR /
 
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /app/main main
+EXPOSE 8080
 
-# Define the command to run the application
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /app/main /main
+
 CMD ["/main"]

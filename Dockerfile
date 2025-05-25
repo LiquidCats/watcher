@@ -12,6 +12,7 @@ COPY . .
 
 ENV GOFLAGS="-buildmode=pie"
 
+RUN apk update --no-cache ca-certificates
 RUN go mod download
 RUN go build -o /app/main ./cmd/watcher
 
@@ -20,9 +21,7 @@ FROM scratch AS app
 
 WORKDIR /
 
-USER 65534
-
-# Copy the built binary from the build stage
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /app/main main
 
 # Define the command to run the application

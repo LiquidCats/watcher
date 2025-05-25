@@ -8,7 +8,7 @@ import (
 	"github.com/go-faster/errors"
 )
 
-const prefix = "/dev/secrets/"
+const prefix = "/run/secrets/"
 
 func GetSecret(name string) (string, error) {
 	if strings.HasPrefix(name, prefix) {

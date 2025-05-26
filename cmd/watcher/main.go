@@ -6,14 +6,16 @@ import (
 
 	"github.com/LiquidCats/graceful"
 	"github.com/LiquidCats/watcher/v2/configs"
-	"github.com/LiquidCats/watcher/v2/internal/adapter/bus"
+	"github.com/LiquidCats/watcher/v2/internal/adapter/bus/redis"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/runner"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/state"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/usecase"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	redis2 "github.com/redis/go-redis/v9"
+	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 
 	_ "github.com/lib/pq"
@@ -40,60 +42,78 @@ func main() {
 		logger.Fatal().Stack().Err(err).Msg("failed to load config")
 	}
 
-	conn, err := pgx.Connect(ctx, cfg.DB.ToDSN())
-	defer func() {
-		if err = conn.Close(ctx); err != nil {
-			logger.Fatal().Stack().Err(err).Msg("close connection")
-		}
-	}()
+	zerolog.DefaultContextLogger = &logger
+	zerolog.SetGlobalLevel(cfg.App.LogLevel)
+
+	poolConfig, err := pgxpool.ParseConfig(cfg.DB.ToDSN())
+	if err != nil {
+		logger.Fatal().Err(err).Msg("parse db config")
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	defer pool.Close()
 	if err != nil {
 		logger.Fatal().Stack().Err(err).Msg("connect to database")
 	}
 
-	if err = database.Migrate(conn); err != nil {
+	migrationConn, err := pool.Acquire(ctx)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("acquire pool connection")
+	}
+
+	if err = database.Migrate(migrationConn.Conn()); err != nil {
 		logger.Fatal().Stack().Err(err).Msg("migrate")
 	}
 
-	rpcAdapter, err := rpc.Factory(cfg.App.Type, cfg)
-	if err != nil {
-		logger.Fatal().Stack().Err(err).Msg("factory")
-	}
-	databaseAdapter := database.New(conn)
-	publisherAdapter := bus.NewRedisPublisher(cfg.Redis)
+	redisClient := redis2.NewClient(cfg.Redis.ToConfig(app))
 
-	blocksState := state.NewPersister[entities.BlockHash](databaseAdapter)
-	transactionState := state.NewPersister[entities.TxID](databaseAdapter)
+	dbRepository := database.New(pool)
 
-	transactionChan := make(chan entities.Transaction, TransactionChannelCap)
-	defer close(transactionChan)
+	blocksPublisher := redis.NewPublisher[entities.Block](redisClient)
+	transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
 
-	blockChan := make(chan entities.Block, BlocksChannelCap)
-	defer close(blockChan)
-
-	txIDChan := make(chan entities.TxID, TransactionChannelCap)
-	defer close(txIDChan)
-
-	blocksUseCase := usecase.NewBlocksJob(cfg.App, blocksState, rpcAdapter, blockChan)
-	mempoolUseCase := usecase.NewMempoolJob(cfg.App, transactionState, rpcAdapter, txIDChan)
-
-	txIDHandler := usecase.NewTxIDHandler(rpcAdapter, transactionChan)
-	blockHandler := usecase.NewBlockHandler(cfg.App, publisherAdapter, blocksState, transactionChan)
-	transactionHandler := usecase.NewTransactionHandler(publisherAdapter)
-
-	txIDWorker := runner.NewWorker(cfg.App.TxIDWorkerCount, txIDChan, txIDHandler)
-	transactionWorker := runner.NewWorker(cfg.App.TransactionWorkerCount, transactionChan, transactionHandler)
-	blockWorker := runner.NewWorker(cfg.App.BlockWorkerCount, blockChan, blockHandler)
-
-	blockProcessor := runner.NewProcessor(cfg.App.Key("blocks"), cfg.App.ScanInterval, blocksUseCase)
-	mempoolProcessor := runner.NewProcessor(cfg.App.Key("mempool"), cfg.App.ScanInterval, mempoolUseCase)
+	blocksState := state.NewPersister[entities.BlockHash](dbRepository)
+	transactionState := state.NewPersister[entities.TxID](dbRepository)
 
 	runners := []graceful.Runner{
 		graceful.Signals,
-		txIDWorker.Run,
-		transactionWorker.Run,
-		blockWorker.Run,
-		blockProcessor.Run,
-		mempoolProcessor.Run,
+	}
+
+	for _, chainConfig := range cfg.Chains {
+		transactionChan := make(chan entities.Transaction, TransactionChannelCap)
+		blockChan := make(chan entities.Block, BlocksChannelCap)
+		txIDChan := make(chan entities.TxID, TransactionChannelCap)
+
+		rpcRepository, err := rpc.Factory(chainConfig)
+		if err != nil {
+			logger.Fatal().Any("err", eris.ToString(err, true)).Msg("rpc adapter creation")
+		}
+
+		blocksJob := usecase.NewBlocksJob(chainConfig, blocksState, rpcRepository, blockChan)
+		mempoolJob := usecase.NewMempoolJob(chainConfig, transactionState, rpcRepository, txIDChan)
+
+		blockProcessor := runner.NewProcessor(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
+		mempoolProcessor := runner.NewProcessor(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
+
+		txIDHandler := usecase.NewTxIDHandler(rpcRepository, transactionChan)
+		blockHandler := usecase.NewBlockHandler(chainConfig, blocksPublisher, blocksState, transactionChan)
+		transactionHandler := usecase.NewTransactionHandler(chainConfig, transactionsPublisher)
+
+		txIDWorker := runner.NewWorker(chainConfig.Workers.TxIDWorkerCount, txIDChan, txIDHandler)
+		transactionWorker := runner.NewWorker(chainConfig.Workers.TransactionWorkerCount, transactionChan, transactionHandler)
+		blockWorker := runner.NewWorker(chainConfig.Workers.BlockWorkerCount, blockChan, blockHandler)
+
+		runners = append(
+			runners,
+			blockProcessor.Run,
+			mempoolProcessor.Run,
+			txIDWorker.Run,
+			transactionWorker.Run,
+			blockWorker.Run,
+		)
+	}
+
+	if err != nil {
+		logger.Fatal().Stack().Err(err).Msg("factory")
 	}
 
 	logger.Info().Msg("starting application")

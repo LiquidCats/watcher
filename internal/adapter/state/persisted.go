@@ -3,98 +3,83 @@ package state
 import (
 	"context"
 	"database/sql"
-	"sync/atomic"
+	"sync"
 	"time"
 
-	db "github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
+	database2 "github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/database"
 	"github.com/bytedance/sonic"
-	"github.com/go-faster/errors"
+	"github.com/rotisserie/eris"
 )
 
-type stateData[T any] struct {
-	value       []T
-	lastUpdated time.Time
-}
-
-type Persister[T any] struct {
+type PersistedState[T any] struct {
 	persistedStorage database.StateDB
-	data             atomic.Value
+	value            []T
+	lastUpdated      time.Time
+	mu               sync.Mutex
 }
 
-func NewPersister[T any](persistedStorage database.StateDB) *Persister[T] {
-	p := &Persister[T]{
+func NewPersister[T any](persistedStorage database.StateDB) *PersistedState[T] {
+	return &PersistedState[T]{
 		persistedStorage: persistedStorage,
 	}
-
-	p.data.Store(stateData[T]{})
-
-	return p
 }
 
-func (p *Persister[T]) Set(ctx context.Context, key string, value []T, period time.Duration) error {
-	// Load the current snapshot
-	oldH, ok := p.data.Load().(stateData[T])
-	if !ok {
-		return errors.New("persisted state not loaded")
-	}
+func (s *PersistedState[T]) Set(ctx context.Context, key string, value []T, period time.Duration) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	h := stateData[T]{
-		value:       value,
-		lastUpdated: oldH.lastUpdated,
-	}
-
-	// Decide whether to push to database
-	if oldH.value == nil || time.Since(oldH.lastUpdated) >= period {
-		// marshal & persist
-		data, err := sonic.Marshal(value)
+	if s.shouldPersist(period) {
+		valueBytes, err := sonic.Marshal(value)
 		if err != nil {
 			return err
 		}
-		if err = p.persistedStorage.SetState(ctx, db.SetStateParams{
+
+		if err = s.persistedStorage.SetState(ctx, database2.SetStateParams{
 			Key:   key,
-			Value: data,
+			Value: valueBytes,
 		}); err != nil {
-			return errors.Wrap(err, "failed to persist state")
+			return eris.Wrap(err, "failed to persist state")
 		}
-		h.lastUpdated = time.Now()
+		s.lastUpdated = time.Now()
 	}
 
-	// Atomically publish the updated in-memory state
-	p.data.Store(h)
+	s.value = value
+
 	return nil
 }
 
-func (p *Persister[T]) Get(ctx context.Context, key string) ([]T, error) {
-	// Fast path: if we already have something in memory, just return it
-	h, ok := p.data.Load().(stateData[T])
-	if !ok {
-		return nil, errors.New("persisted state not loaded")
+func (s *PersistedState[T]) shouldPersist(period time.Duration) bool {
+	if s.value == nil {
+		return true
 	}
 
-	if len(h.value) != 0 {
-		return h.value, nil
+	return time.Since(s.lastUpdated) >= period
+}
+
+func (s *PersistedState[T]) Get(ctx context.Context, key string) ([]T, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if len(s.value) != 0 {
+		return s.value, nil
 	}
 
-	state, err := p.persistedStorage.GetStateByKey(ctx, key)
+	state, err := s.persistedStorage.GetStateByKey(ctx, key)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if eris.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, errors.Wrap(err, "persisted state")
+		return nil, eris.Wrap(err, "persisted state")
 	}
 
 	var value []T
 
 	if err = sonic.Unmarshal(state.Value, &value); err != nil {
-		return nil, errors.Wrap(err, "failed to decode state")
+		return nil, eris.Wrap(err, "failed to decode state")
 	}
 
-	h = stateData[T]{
-		value:       value,
-		lastUpdated: state.UpdatedAt.Time,
-	}
-	p.data.Store(h)
+	s.lastUpdated = state.UpdatedAt.Time
 
 	return value, nil
 }

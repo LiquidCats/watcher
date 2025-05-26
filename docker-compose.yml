@@ -1,5 +1,6 @@
 x-app-env: &app-env
   GOMAXPROCS: 1
+  WATCHER_APP_LOG_LE: debug
 
   WATCHER_DB_HOST: postgres
   WATCHER_DB_PORT: 5432
@@ -10,19 +11,6 @@ x-app-env: &app-env
   WATCHER_REDIS_HOST: redis
   WATCHER_REDIS_PORT: 6379
   WATCHER_REDIS_DB: 0
-  WATCHER_REDIS_BLOCK_CHANNEL: btc-blocks
-  WATCHER_REDIS_TX_CHANNEL: btc-transactions
-  #
-  WATCHER_APP_DRIVER: "rpc"
-  WATCHER_APP_TYPE: "utxo"
-  WATCHER_APP_CHAIN: "bitcoin"
-
-  WATCHER_APP_SCAN_DEPTH: 144
-  WATCHER_APP_SCAN_INTERVAL: 10s
-  WATCHER_APP_PERSIST_BOCKS: 10
-  WATCHER_APP_PERSIST_DURATION: 1m
-
-  WATCHER_UTXO_RPC_URL: "http://btc:password@btc:8332/"
 
 services:
   watcher:
@@ -38,6 +26,7 @@ services:
       - postgres
       - redis
       - btc
+      - eth
   postgres:
     image: postgres:alpine
     environment:
@@ -73,7 +62,17 @@ services:
     restart: on-failure
     stop_grace_period: 15m30s
 
+  eth:
+    image: ghcr.io/liquidcats/eth-helios-docker:latest
+    volumes:
+      - eth:/root/.helios
+    ports:
+      - "8545:8545"
+    restart: on-failure
+    stop_grace_period: 15m30s
+
 volumes:
   btc:
+  eth:
   postgres_data:
   redis_data:

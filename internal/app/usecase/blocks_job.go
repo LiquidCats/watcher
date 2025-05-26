@@ -9,19 +9,19 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
-	"github.com/go-faster/errors"
+	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 )
 
 type BlocksJob struct {
-	cfg       configs.App
+	cfg       configs.ChainConfig
 	state     state.State[entities.BlockHash]
 	rpcClient rpc.Client
 	workerCh  runner.ChanWrite[entities.Block]
 }
 
 func NewBlocksJob(
-	cfg configs.App,
+	cfg configs.ChainConfig,
 	state state.State[entities.BlockHash],
 	rpcClient rpc.Client,
 	workerCh runner.ChanWrite[entities.Block],
@@ -43,12 +43,12 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 
 	blocksState, err := uc.state.Get(ctx, uc.cfg.Key("blocks"))
 	if err != nil {
-		return errors.Wrap(err, "get state")
+		return eris.Wrap(err, "get state")
 	}
 
 	blockHash, err = uc.rpcClient.GetLatestBlockHash(ctx)
 	if err != nil {
-		return errors.Wrap(err, "get latest block hash")
+		return eris.Wrap(err, "get latest block hash")
 	}
 
 	logger.Info().Any("block_hash", blockHash).Msg("starting form")
@@ -61,7 +61,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 	for {
 		block, err = uc.rpcClient.GetBlockByHash(ctx, blockHash)
 		if err != nil {
-			return errors.Wrapf(err, "get block [%s]", blockHash)
+			return eris.Wrapf(err, "get block [%s]", blockHash)
 		}
 
 		blocks = append(blocks, block)
@@ -72,7 +72,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 
 		blockHash = block.GetPrevHash()
 
-		if len(blocks) >= uc.cfg.ScanDepth {
+		if len(blocks) >= uc.cfg.Scan.Depth {
 			logger.Debug().Msg("scan block depth")
 			break
 		}

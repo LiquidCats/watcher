@@ -16,7 +16,10 @@ type TransactionHandler struct {
 	transactionPub bus.Publisher[entities.Transaction]
 }
 
-func NewTransactionHandler(cfg configs.ChainConfig, transactionPub bus.Publisher[entities.Transaction]) *TransactionHandler {
+func NewTransactionHandler(
+	cfg configs.ChainConfig,
+	transactionPub bus.Publisher[entities.Transaction],
+) *TransactionHandler {
 	return &TransactionHandler{
 		cfg:            cfg,
 		transactionPub: transactionPub,

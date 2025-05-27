@@ -42,7 +42,7 @@ func main() {
 		logger.Fatal().Stack().Err(err).Msg("failed to load config")
 	}
 
-	zerolog.DefaultContextLogger = &logger
+	zerolog.DefaultContextLogger = &logger // nolint:reassign
 	zerolog.SetGlobalLevel(cfg.App.LogLevel)
 
 	poolConfig, err := pgxpool.ParseConfig(cfg.DB.ToDSN())
@@ -50,6 +50,9 @@ func main() {
 		logger.Fatal().Err(err).Msg("parse db config")
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("database config")
+	}
 	defer pool.Close()
 	if err != nil {
 		logger.Fatal().Stack().Err(err).Msg("connect to database")
@@ -83,8 +86,8 @@ func main() {
 		blockChan := make(chan entities.Block, BlocksChannelCap)
 		txIDChan := make(chan entities.TxID, TransactionChannelCap)
 
-		rpcRepository, err := rpc.Factory(chainConfig)
-		if err != nil {
+		rpcRepository, chainErr := rpc.Factory(chainConfig)
+		if chainErr != nil {
 			logger.Fatal().Any("err", eris.ToString(err, true)).Msg("rpc adapter creation")
 		}
 

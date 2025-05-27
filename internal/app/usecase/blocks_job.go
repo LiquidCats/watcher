@@ -39,7 +39,12 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 	var block entities.Block
 	var err error
 
-	logger := zerolog.Ctx(ctx)
+	logger := zerolog.Ctx(ctx).With().
+		Str("name", "blocks_job").
+		Any("driver", uc.cfg.Driver).
+		Any("type", uc.cfg.Type).
+		Any("chain", uc.cfg.Chain).
+		Logger()
 
 	blocksState, err := uc.state.Get(ctx, uc.cfg.Key("blocks"))
 	if err != nil {

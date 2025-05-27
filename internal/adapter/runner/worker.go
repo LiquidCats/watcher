@@ -9,13 +9,15 @@ import (
 )
 
 type Worker[T any] struct {
+	name         string
 	workerCh     runner.ChanRead[T]
 	handler      runner.Handler[T]
 	workersCount uint
 }
 
-func NewWorker[T any](workersCount uint, workerCh runner.ChanRead[T], handler runner.Handler[T]) *Worker[T] {
+func NewWorker[T any](name string, workersCount uint, workerCh runner.ChanRead[T], handler runner.Handler[T]) *Worker[T] {
 	return &Worker[T]{
+		name:         name,
 		workersCount: workersCount,
 		workerCh:     workerCh,
 		handler:      handler,
@@ -23,6 +25,13 @@ func NewWorker[T any](workersCount uint, workerCh runner.ChanRead[T], handler ru
 }
 
 func (w *Worker[T]) Run(ctx context.Context) error {
+	logger := zerolog.Ctx(ctx).
+		With().
+		Caller().
+		Str("worker_name", w.name).
+		Uint("workers_count", w.workersCount).
+		Logger()
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	for range w.workersCount {
@@ -31,15 +40,26 @@ func (w *Worker[T]) Run(ctx context.Context) error {
 		})
 	}
 
+	logger.Info().Msg("background workers started")
+	defer logger.Info().Msg("background workers stopped")
+
 	return g.Wait()
 }
 
 func (w *Worker[T]) runner(ctx context.Context) error {
-	logger := zerolog.Ctx(ctx).With().Str("name", "runner").Logger()
+	logger := zerolog.Ctx(ctx).
+		With().
+		Caller().
+		Str("worker_name", w.name).
+		Logger()
+
+	logger.Debug().Msg("runner started")
+	defer logger.Debug().Msg("runner stopped")
 
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Debug().Msg("context closed")
 			return ctx.Err()
 		case v, ok := <-w.workerCh:
 			if !ok {
@@ -47,8 +67,10 @@ func (w *Worker[T]) runner(ctx context.Context) error {
 				return nil
 			}
 
+			logger.Debug().Any("msg", v).Msg("worker message")
+
 			if err := w.handler.Handle(ctx, v); err != nil {
-				logger.Error().Err(err).Msg("runner handler error")
+				logger.Error().Err(err).Msg("runner")
 			}
 		}
 	}

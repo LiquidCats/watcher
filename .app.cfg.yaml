@@ -3,12 +3,16 @@ chains:
     iso: eth
     type: evm
     driver: rpc
+    workers:
+      txid_worker_count: 0
+      block_worker_count: 1
+      transaction_worker_count: 5
     scan:
       depth: 10
       interval: 10s
     persist:
       capacity: 10
-      duration: 1h
+      duration: 9000h
     topics:
       transactions: eth-transactions
       blocks: eth-blocks
@@ -19,9 +23,13 @@ chains:
     iso: btc
     type: utxo
     driver: rpc
+    workers:
+      txid_worker_count: 3
+      block_worker_count: 1
+      transaction_worker_count: 5
     scan:
       depth: 10
-      interval: 10s
+      interval: 1s
     persist:
       bocks: 10
       duration: 1h
@@ -29,4 +37,4 @@ chains:
       transactions: btc-transactions
       blocks: btc-blocks
     rpc:
-      node_url: http://btc:8332
+      node_url: http://btc:password@btc:8332

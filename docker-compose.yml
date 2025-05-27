@@ -1,6 +1,6 @@
 x-app-env: &app-env
   GOMAXPROCS: 1
-  WATCHER_APP_LOG_LE: debug
+  WATCHER_APP_LOG_LEVEL: debug
 
   WATCHER_DB_HOST: postgres
   WATCHER_DB_PORT: 5432
@@ -47,6 +47,7 @@ services:
     user: 1000:1000
     image: lncm/bitcoind:v28.0
     command:
+      - "-disablewallet=1"
       - "-prune=550"
       - "-maxuploadtarget=1440M"
       - "-testnet4=1"
@@ -65,11 +66,11 @@ services:
   eth:
     image: ghcr.io/liquidcats/eth-helios-docker:latest
     volumes:
+      - ./api_key.secret:/run/secrets/api_key
       - eth:/root/.helios
     ports:
       - "8545:8545"
     restart: on-failure
-    stop_grace_period: 15m30s
 
 volumes:
   btc:

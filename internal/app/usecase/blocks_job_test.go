@@ -16,13 +16,17 @@ import (
 )
 
 func TestWatchBlocksUseCase_Execute(t *testing.T) {
-	cfg := configs.App{
-		Driver:          entities.DriverRPC,
-		Type:            entities.TypeUtxo,
-		Chain:           "bitcoin",
-		ScanDepth:       2,
-		PersistBocks:    6,
-		PersistDuration: time.Hour,
+	cfg := configs.ChainConfig{
+		Driver: entities.DriverRPC,
+		Type:   entities.TypeUtxo,
+		Chain:  "bitcoin",
+		Scan: configs.ScanConfig{
+			Depth: 2,
+		},
+		Persist: configs.PersistConfig{
+			Capacity: 6,
+			Duration: time.Hour,
+		},
 	}
 
 	state := mocks.NewMockState[entities.BlockHash](t)

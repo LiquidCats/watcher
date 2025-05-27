@@ -16,12 +16,14 @@ import (
 
 func TestBlockHandler_Handle(t *testing.T) {
 	ctx := t.Context()
-	cfg := configs.App{
-		Driver:          entities.DriverRPC,
-		Type:            entities.TypeUtxo,
-		Chain:           "bitcoin",
-		PersistBocks:    3,
-		PersistDuration: time.Hour,
+	cfg := configs.ChainConfig{
+		Driver: entities.DriverRPC,
+		Type:   entities.TypeUtxo,
+		Chain:  "bitcoin",
+		Persist: configs.PersistConfig{
+			Capacity: 3,
+			Duration: time.Hour,
+		},
 	}
 	block := &data.Block{
 		Hash:              "hash3",
@@ -47,11 +49,11 @@ func TestBlockHandler_Handle(t *testing.T) {
 		},
 	}
 
-	pub := mocks.NewMockBlockPublisher(t)
+	pub := mocks.NewMockPublisher[entities.Block](t)
 	st := mocks.NewMockState[entities.BlockHash](t)
 	ch := make(chan entities.Transaction, 2)
 
-	pub.On("PublishBlock", mock.Anything, block).Once().Return(nil)
+	pub.On("PublishTo", mock.Anything, cfg.Topics.Blocks, block).Once().Return(nil)
 	st.On("Get", mock.Anything, "utxo.rpc.bitcoin.blocks").Return([]entities.BlockHash{"hash1", "hash2"}, nil)
 	st.On("Set", mock.Anything, "utxo.rpc.bitcoin.blocks", []entities.BlockHash{"hash1", "hash2", "hash3"}, time.Hour).Return(nil)
 

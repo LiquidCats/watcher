@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
+	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 )
 
@@ -30,14 +31,14 @@ func (bp *Processor) Run(ctx context.Context) error {
 	ticker := time.NewTicker(bp.interval)
 	defer ticker.Stop()
 
-	logger := zerolog.Ctx(ctx)
+	logger := zerolog.Ctx(ctx).With().Str("job_name", bp.name).Logger()
 
-	logger.Info().Msgf("background processor [name: %s] started", bp.name)
-	defer logger.Info().Msgf("background processor [name: %s] stopped", bp.name)
+	logger.Info().Msg("background processor started")
+	defer logger.Info().Msg("background processor stopped")
 
 	for {
 		if err := bp.job.Handle(ctx); err != nil {
-			logger.Error().Stack().Err(err).Stack().Msgf("background processor [name: %s] failed", bp.name)
+			logger.Error().Any("err", eris.ToJSON(err, true)).Msg("background processor failed")
 		}
 
 		select {

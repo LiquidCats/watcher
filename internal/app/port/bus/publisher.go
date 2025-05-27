@@ -1,15 +1,7 @@
 package bus
 
-import (
-	"context"
+import "context"
 
-	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
-)
-
-type TransactionPublisher interface {
-	PublishTransaction(ctx context.Context, transaction entities.Transaction) error
-}
-
-type BlockPublisher interface {
-	PublishBlock(ctx context.Context, block entities.Block) error
+type Publisher[T any] interface {
+	PublishTo(ctx context.Context, topic string, data T) error
 }

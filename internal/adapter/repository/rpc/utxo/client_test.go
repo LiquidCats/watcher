@@ -39,7 +39,7 @@ func TestClient_GetMempool(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
+	client := utxo.NewClient(configs.RPCConfig{NodeURL: api.URL})
 
 	ctx := t.Context()
 
@@ -67,7 +67,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
+	client := utxo.NewClient(configs.RPCConfig{NodeURL: api.URL})
 
 	ctx := t.Context()
 
@@ -100,7 +100,7 @@ func TestClient_GetTransactionByTxId(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
+	client := utxo.NewClient(configs.RPCConfig{NodeURL: api.URL})
 
 	ctx := t.Context()
 
@@ -140,7 +140,7 @@ func TestClient_GetLatestBlockHash(t *testing.T) {
 	}))
 	defer api.Close()
 
-	client := utxo.NewClient(configs.UtxoRPC{URL: api.URL})
+	client := utxo.NewClient(configs.RPCConfig{NodeURL: api.URL})
 
 	ctx := t.Context()
 

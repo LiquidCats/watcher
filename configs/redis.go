@@ -1,10 +1,21 @@
 package configs
 
+import (
+	"net"
+
+	"github.com/redis/go-redis/v9"
+)
+
 type Redis struct {
 	Host string `yaml:"host" envconfig:"HOST"`
-	Port int    `yaml:"port" envconfig:"PORT"`
+	Port string `yaml:"port" envconfig:"PORT"`
 	DB   int    `yaml:"db" envconfig:"DB"`
+}
 
-	BlockChannel       string `yaml:"block_channel" envconfig:"BLOCK_CHANNEL"`
-	TransactionChannel string `yaml:"transaction_channel" envconfig:"TX_CHANNEL"`
+func (r Redis) ToConfig(appName string) *redis.Options {
+	return &redis.Options{
+		Addr:       net.JoinHostPort(r.Host, r.Port),
+		ClientName: appName,
+		DB:         r.DB,
+	}
 }

@@ -14,12 +14,14 @@ import (
 )
 
 func TestWatchMempoolUseCase_Execute(t *testing.T) {
-	cfg := configs.App{
+	cfg := configs.ChainConfig{
 		Driver: entities.DriverRPC,
 		Type:   entities.TypeUtxo,
 		Chain:  "bitcoin",
 
-		PersistDuration: time.Hour,
+		Persist: configs.PersistConfig{
+			Duration: time.Hour,
+		},
 	}
 	state := mocks.NewMockState[entities.TxID](t)
 	client := mocks.NewMockClient(t)
@@ -35,7 +37,7 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.mempool").
 		Once().
 		Return([]entities.TxID{}, nil)
-	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.mempool", newMempool, cfg.PersistDuration).
+	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.mempool", newMempool, cfg.Persist.Duration).
 		Once().
 		Return(nil)
 

@@ -6,8 +6,8 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
+	"github.com/rotisserie/eris"
 
-	"github.com/go-faster/errors"
 	"github.com/rs/zerolog"
 )
 
@@ -28,7 +28,7 @@ func (uc *TxIDHandler) Handle(ctx context.Context, txid entities.TxID) error {
 
 	tx, err := uc.rpcClient.GetTransactionByTxID(ctx, txid)
 	if err != nil {
-		return errors.Wrap(err, "get transaction by txid")
+		return eris.Wrap(err, "get transaction by txid")
 	}
 
 	logger.Info().Msg("got transaction by hash")

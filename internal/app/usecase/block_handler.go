@@ -9,20 +9,20 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
 
-	"github.com/go-faster/errors"
+	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 )
 
 type BlockHandler struct {
-	cfg           configs.App
-	blockPub      bus.BlockPublisher
+	cfg           configs.ChainConfig
+	blockPub      bus.Publisher[entities.Block]
 	state         state.State[entities.BlockHash]
 	transactionCh runner.ChanWrite[entities.Transaction]
 }
 
 func NewBlockHandler(
-	cfg configs.App,
-	blockPub bus.BlockPublisher,
+	cfg configs.ChainConfig,
+	blockPub bus.Publisher[entities.Block],
 	state state.State[entities.BlockHash],
 	transactionCh runner.ChanWrite[entities.Transaction],
 ) *BlockHandler {
@@ -41,17 +41,17 @@ func (uc *BlockHandler) Handle(ctx context.Context, block entities.Block) error 
 		uc.transactionCh <- tx
 	}
 
-	err := uc.blockPub.PublishBlock(ctx, block)
+	err := uc.blockPub.PublishTo(ctx, uc.cfg.Topics.Blocks, block)
 	if err != nil {
-		return errors.Wrap(err, "publish block")
+		return eris.Wrap(err, "publish block")
 	}
 
 	blocksState, err := uc.state.Get(ctx, uc.cfg.Key("blocks"))
 	if err != nil {
-		return errors.Wrap(err, "get state")
+		return eris.Wrap(err, "get state")
 	}
 
-	if len(blocksState) >= uc.cfg.PersistBocks {
+	if len(blocksState) >= uc.cfg.Persist.Capacity {
 		blocksState = append(blocksState[1:], block.GetHash())
 	} else {
 		blocksState = append(blocksState, block.GetHash())
@@ -61,7 +61,7 @@ func (uc *BlockHandler) Handle(ctx context.Context, block entities.Block) error 
 		ctx,
 		uc.cfg.Key("blocks"),
 		blocksState,
-		uc.cfg.PersistDuration,
+		uc.cfg.Persist.Duration,
 	); err != nil {
 		logger.Error().Err(err).Msg("set state")
 	}

@@ -1,0 +1,32 @@
+chains:
+  - chain: ethereum
+    iso: eth
+    type: evm
+    driver: rpc
+    scan:
+      depth: 10
+      interval: 10s
+    persist:
+      capacity: 10
+      duration: 1h
+    topics:
+      transactions: eth-transactions
+      blocks: eth-blocks
+    rpc:
+      node_url: http://eth:8545
+
+  - chain: bitcoin
+    iso: btc
+    type: utxo
+    driver: rpc
+    scan:
+      depth: 10
+      interval: 10s
+    persist:
+      bocks: 10
+      duration: 1h
+    topics:
+      transactions: btc-transactions
+      blocks: btc-blocks
+    rpc:
+      node_url: http://btc:8332

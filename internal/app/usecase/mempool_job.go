@@ -8,19 +8,19 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
-	"github.com/go-faster/errors"
+	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 )
 
 type MempoolJob struct {
-	cfg       configs.App
+	cfg       configs.ChainConfig
 	state     state.State[entities.TxID]
 	rpcClient rpc.Client
 	txIDCh    runner.ChanWrite[entities.TxID]
 }
 
 func NewMempoolJob(
-	cfg configs.App,
+	cfg configs.ChainConfig,
 	state state.State[entities.TxID],
 	rpcClient rpc.Client,
 	txIDCh runner.ChanWrite[entities.TxID],
@@ -44,14 +44,14 @@ func (uc *MempoolJob) Handle(ctx context.Context) error {
 
 	oldMempool, err := uc.state.Get(ctx, uc.cfg.Key("mempool"))
 	if err != nil {
-		return errors.Wrap(err, "get old mempool")
+		return eris.Wrap(err, "get old mempool")
 	}
 
 	logger.Debug().Any("old_mempool_len", len(oldMempool)).Msg("old mempool")
 
 	newMempool, err := uc.rpcClient.GetMempool(ctx)
 	if err != nil {
-		return errors.Wrap(err, "get new mempool")
+		return eris.Wrap(err, "get new mempool")
 	}
 
 	if len(newMempool) == 0 && len(oldMempool) == 0 {
@@ -83,9 +83,9 @@ func (uc *MempoolJob) Handle(ctx context.Context) error {
 		ctx,
 		uc.cfg.Key("mempool"),
 		newMempool,
-		uc.cfg.PersistDuration,
+		uc.cfg.Persist.Duration,
 	); err != nil {
-		return errors.Wrap(err, "set new mempool")
+		return eris.Wrap(err, "set new mempool")
 	}
 
 	return nil

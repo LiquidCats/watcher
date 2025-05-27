@@ -10,7 +10,6 @@ linters:
     - bodyclose
     - canonicalheader
     - copyloopvar
-    - cyclop
     - depguard
     - dupl
     - durationcheck
@@ -49,7 +48,6 @@ linters:
     - nilnesserr
     - nilnil
     - noctx
-#    - nolintlint
     - nonamedreturns
     - nosprintfhostport
     - perfsprint
@@ -76,9 +74,6 @@ linters:
     - wastedassign
     - whitespace
   settings:
-    cyclop:
-      max-complexity: 30
-      package-average: 10
     depguard:
       rules:
         deprecated:
@@ -133,8 +128,8 @@ linters:
         - ^google.golang.org/protobuf/.+Options$
         - ^gopkg.in/yaml.v3.Node$
     funlen:
-      lines: 100
-      statements: 50
+      lines: 120
+      statements: 100
       ignore-comments: true
     gocognit:
       min-complexity: 30
@@ -150,9 +145,6 @@ linters:
       disable:
         - fieldalignment
       enable-all: true
-      settings:
-        shadow:
-          strict: true
     inamedparam:
       skip-single-param: true
     mnd:

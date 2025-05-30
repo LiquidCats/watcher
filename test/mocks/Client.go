@@ -39,8 +39,8 @@ func (_m *MockClient) EXPECT() *MockClient_Expecter {
 }
 
 // GetBlockByHash provides a mock function for the type MockClient
-func (_mock *MockClient) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
-	ret := _mock.Called(ctx, hash)
+func (_mock *MockClient) GetBlockByHash(ctx context.Context, hash entities.BlockHash, withTx bool) (entities.Block, error) {
+	ret := _mock.Called(ctx, hash, withTx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetBlockByHash")
@@ -48,18 +48,18 @@ func (_mock *MockClient) GetBlockByHash(ctx context.Context, hash entities.Block
 
 	var r0 entities.Block
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, entities.BlockHash) (entities.Block, error)); ok {
-		return returnFunc(ctx, hash)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, entities.BlockHash, bool) (entities.Block, error)); ok {
+		return returnFunc(ctx, hash, withTx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, entities.BlockHash) entities.Block); ok {
-		r0 = returnFunc(ctx, hash)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, entities.BlockHash, bool) entities.Block); ok {
+		r0 = returnFunc(ctx, hash, withTx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(entities.Block)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, entities.BlockHash) error); ok {
-		r1 = returnFunc(ctx, hash)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, entities.BlockHash, bool) error); ok {
+		r1 = returnFunc(ctx, hash, withTx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -74,13 +74,14 @@ type MockClient_GetBlockByHash_Call struct {
 // GetBlockByHash is a helper method to define mock.On call
 //   - ctx
 //   - hash
-func (_e *MockClient_Expecter) GetBlockByHash(ctx interface{}, hash interface{}) *MockClient_GetBlockByHash_Call {
-	return &MockClient_GetBlockByHash_Call{Call: _e.mock.On("GetBlockByHash", ctx, hash)}
+//   - withTx
+func (_e *MockClient_Expecter) GetBlockByHash(ctx interface{}, hash interface{}, withTx interface{}) *MockClient_GetBlockByHash_Call {
+	return &MockClient_GetBlockByHash_Call{Call: _e.mock.On("GetBlockByHash", ctx, hash, withTx)}
 }
 
-func (_c *MockClient_GetBlockByHash_Call) Run(run func(ctx context.Context, hash entities.BlockHash)) *MockClient_GetBlockByHash_Call {
+func (_c *MockClient_GetBlockByHash_Call) Run(run func(ctx context.Context, hash entities.BlockHash, withTx bool)) *MockClient_GetBlockByHash_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(entities.BlockHash))
+		run(args[0].(context.Context), args[1].(entities.BlockHash), args[2].(bool))
 	})
 	return _c
 }
@@ -90,7 +91,7 @@ func (_c *MockClient_GetBlockByHash_Call) Return(block entities.Block, err error
 	return _c
 }
 
-func (_c *MockClient_GetBlockByHash_Call) RunAndReturn(run func(ctx context.Context, hash entities.BlockHash) (entities.Block, error)) *MockClient_GetBlockByHash_Call {
+func (_c *MockClient_GetBlockByHash_Call) RunAndReturn(run func(ctx context.Context, hash entities.BlockHash, withTx bool) (entities.Block, error)) *MockClient_GetBlockByHash_Call {
 	_c.Call.Return(run)
 	return _c
 }

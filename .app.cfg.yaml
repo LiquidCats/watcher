@@ -5,8 +5,7 @@ chains:
     driver: rpc
     workers:
       txid_worker_count: 0
-      block_worker_count: 1
-      transaction_worker_count: 5
+      block_transactions_worker_count: 5
     scan:
       depth: 10
       interval: 10s
@@ -25,8 +24,7 @@ chains:
     driver: rpc
     workers:
       txid_worker_count: 3
-      block_worker_count: 1
-      transaction_worker_count: 5
+      block_transactions_worker_count: 5
     scan:
       depth: 10
       interval: 1s

@@ -9,25 +9,25 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type Processor struct {
+type Ticker struct {
 	name     string
 	interval time.Duration
 	job      runner.Job
 }
 
-func NewProcessor(
+func NewTicker(
 	name string,
 	interval time.Duration,
 	job runner.Job,
-) *Processor {
-	return &Processor{
+) *Ticker {
+	return &Ticker{
 		name:     name,
 		interval: interval,
 		job:      job,
 	}
 }
 
-func (bp *Processor) Run(ctx context.Context) error {
+func (bp *Ticker) Run(ctx context.Context) error {
 	ticker := time.NewTicker(bp.interval)
 	defer ticker.Stop()
 

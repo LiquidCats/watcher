@@ -27,7 +27,7 @@ func TestProcessor_Run(t *testing.T) {
 
 				ctx := t.Context()
 
-				processor := runner.NewProcessor("test", 10*time.Millisecond, job)
+				processor := runner.NewTicker("test", 10*time.Millisecond, job)
 
 				// Cancel context after short time
 				ctx, cancel := context.WithTimeout(ctx, 35*time.Millisecond)
@@ -50,7 +50,7 @@ func TestProcessor_Run(t *testing.T) {
 
 				ctx := t.Context()
 
-				processor := runner.NewProcessor("errjob", 10*time.Millisecond, job)
+				processor := runner.NewTicker("errjob", 10*time.Millisecond, job)
 
 				// Cancel context after one interval
 				ctx, cancel := context.WithTimeout(ctx, 15*time.Millisecond)
@@ -70,7 +70,7 @@ func TestProcessor_Run(t *testing.T) {
 
 				ctx := t.Context()
 
-				processor := runner.NewProcessor("cancelled", 100*time.Millisecond, job)
+				processor := runner.NewTicker("cancelled", 100*time.Millisecond, job)
 
 				// Cancel context immediately
 				ctx, cancel := context.WithCancel(ctx)

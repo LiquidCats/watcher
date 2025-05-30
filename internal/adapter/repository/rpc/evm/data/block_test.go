@@ -19,7 +19,7 @@ func TestBlock_UnmarshalJSON_Transactions(t *testing.T) {
 	require.NoError(t, err)
 
 	tx := block.GetTransactions()[0]
-	_, ok := tx.(entities.Transaction)
+	_, ok := tx.(entities.Transaction) //nolint:staticcheck
 	require.True(t, ok)
 }
 func TestBlock_UnmarshalJSON_TxIDs(t *testing.T) {

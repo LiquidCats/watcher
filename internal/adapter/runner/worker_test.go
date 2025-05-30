@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mock Handler for testing
+// Mock Handler for testing.
 type MockHandler[T any] struct {
 	mock.Mock
 	mu       sync.Mutex
@@ -54,7 +54,7 @@ func TestWorker_Run_BasicSuccess(t *testing.T) {
 	// Create worker with logger context
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.InfoLevel)
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
 	defer cancel()
 	ctx = logger.WithContext(ctx)
 
@@ -85,7 +85,7 @@ func TestWorker_Run_HandlerError(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.ErrorLevel)
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
 	defer cancel()
 	ctx = logger.WithContext(ctx)
 
@@ -109,14 +109,14 @@ func TestWorker_Run_ContextCancellation(t *testing.T) {
 	handler.On("Handle", mock.Anything, mock.AnythingOfType("int")).Return(nil)
 
 	// Fill channel with data
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		ch <- i
 	}
 
 	// Create cancellable context
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.DebugLevel)
-	ctx, cancel := context.WithCancel(logger.WithContext(context.Background()))
+	ctx, cancel := context.WithCancel(logger.WithContext(t.Context()))
 
 	worker := runner.NewWorker("test-worker", 2, ch, handler)
 
@@ -139,7 +139,7 @@ func TestWorker_Run_ContextTimeout(t *testing.T) {
 	// Create context with very short timeout
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.DebugLevel)
-	ctx, cancel := context.WithTimeout(logger.WithContext(context.Background()), 10*time.Millisecond)
+	ctx, cancel := context.WithTimeout(logger.WithContext(t.Context()), 10*time.Millisecond)
 	defer cancel()
 
 	worker := runner.NewWorker("test-worker", 1, ch, handler)
@@ -156,7 +156,7 @@ func TestWorker_Run_EmptyChannel(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.ErrorLevel)
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
 	defer cancel()
 	ctx = logger.WithContext(ctx)
 
@@ -174,7 +174,7 @@ func TestWorker_Run_MultipleWorkers(t *testing.T) {
 
 	// Setup test data
 	testValues := make([]int, 20)
-	for i := 0; i < 20; i++ {
+	for i := range 20 {
 		testValues[i] = i
 		ch <- i
 	}
@@ -184,7 +184,7 @@ func TestWorker_Run_MultipleWorkers(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.ErrorLevel)
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
 	defer cancel()
 	ctx = logger.WithContext(ctx)
 
@@ -206,7 +206,7 @@ func TestWorker_Run_ZeroWorkers(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.InfoLevel)
-	ctx := logger.WithContext(context.Background())
+	ctx := logger.WithContext(t.Context())
 
 	worker := runner.NewWorker("test-worker", 0, ch, handler)
 
@@ -223,20 +223,20 @@ func TestWorker_Run_ConcurrentHandling(t *testing.T) {
 	handler := new(MockHandler[int])
 
 	// Fill channel with sequential numbers
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		ch <- i
 	}
 
 	// Add small delay to simulate work
 	handler.On("Handle", mock.Anything, mock.AnythingOfType("int")).
 		Return(nil).
-		Run(func(args mock.Arguments) {
+		Run(func(_ mock.Arguments) {
 			time.Sleep(1 * time.Millisecond)
 		})
 
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.ErrorLevel)
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 150*time.Millisecond)
 	defer cancel()
 	ctx = logger.WithContext(ctx)
 
@@ -253,19 +253,19 @@ func TestWorker_Run_ConcurrentHandling(t *testing.T) {
 	assert.Less(t, duration, 200*time.Millisecond, "Concurrent processing should be reasonably fast")
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkWorker_Run_SingleWorker(b *testing.B) {
 	ch := make(chan int, b.N)
 	handler := new(MockHandler[int])
 
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		ch <- i
 	}
 
 	handler.On("Handle", mock.Anything, mock.AnythingOfType("int")).Return(nil)
 
 	logger := zerolog.Nop()
-	ctx := logger.WithContext(context.Background())
+	ctx := logger.WithContext(b.Context())
 	worker := runner.NewWorker("bench-worker", 1, ch, handler)
 
 	b.ResetTimer()
@@ -277,14 +277,14 @@ func BenchmarkWorker_Run_MultipleWorkers(b *testing.B) {
 	ch := make(chan int, b.N)
 	handler := new(MockHandler[int])
 
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		ch <- i
 	}
 
 	handler.On("Handle", mock.Anything, mock.AnythingOfType("int")).Return(nil)
 
 	logger := zerolog.Nop()
-	ctx := logger.WithContext(context.Background())
+	ctx := logger.WithContext(b.Context())
 	worker := runner.NewWorker("bench-worker", 4, ch, handler)
 
 	b.ResetTimer()

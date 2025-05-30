@@ -18,7 +18,11 @@ type TxIDHandler struct {
 	publisher bus.Publisher[entities.Transaction]
 }
 
-func NewTxIDHandler(cfg configs.ChainConfig, rpcClient rpc.Client, publisher bus.Publisher[entities.Transaction]) *TxIDHandler {
+func NewTxIDHandler(
+	cfg configs.ChainConfig,
+	rpcClient rpc.Client,
+	publisher bus.Publisher[entities.Transaction],
+) *TxIDHandler {
 	return &TxIDHandler{
 		cfg:       cfg,
 		rpcClient: rpcClient,

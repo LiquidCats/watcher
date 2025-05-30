@@ -15,7 +15,12 @@ type Worker[T any] struct {
 	workersCount uint
 }
 
-func NewWorker[T any](name string, workersCount uint, workerCh runner.ChanRead[T], handler runner.Handler[T]) *Worker[T] {
+func NewWorker[T any](
+	name string,
+	workersCount uint,
+	workerCh runner.ChanRead[T],
+	handler runner.Handler[T],
+) *Worker[T] {
 	return &Worker[T]{
 		name:         name,
 		workersCount: workersCount,

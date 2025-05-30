@@ -107,9 +107,24 @@ func main() {
 		blockHandler := usecase.NewBlockHandler(chainConfig, blocksPublisher, blocksState, transactionChan)
 		transactionHandler := usecase.NewTransactionHandler(chainConfig, transactionsPublisher)
 
-		txIDWorker := runner.NewWorker(chainConfig.Key("txid"), chainConfig.Workers.TxIDWorkerCount, txIDChan, txIDHandler)
-		transactionWorker := runner.NewWorker(chainConfig.Key("tx"), chainConfig.Workers.TransactionWorkerCount, transactionChan, transactionHandler)
-		blockWorker := runner.NewWorker(chainConfig.Key("block"), chainConfig.Workers.BlockWorkerCount, blockChan, blockHandler)
+		txIDWorker := runner.NewWorker(
+			chainConfig.Key("txid"),
+			chainConfig.Workers.TxIDWorkerCount,
+			txIDChan,
+			txIDHandler,
+		)
+		transactionWorker := runner.NewWorker(
+			chainConfig.Key("tx"),
+			chainConfig.Workers.TransactionWorkerCount,
+			transactionChan,
+			transactionHandler,
+		)
+		blockWorker := runner.NewWorker(
+			chainConfig.Key("block"),
+			chainConfig.Workers.BlockWorkerCount,
+			blockChan,
+			blockHandler,
+		)
 
 		runners = append(
 			runners,

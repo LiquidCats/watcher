@@ -50,7 +50,11 @@ func (w *Worker[T]) Run(ctx context.Context) error {
 	logger.Info().Msg("background workers started")
 	defer logger.Info().Msg("background workers stopped")
 
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (w *Worker[T]) runner(ctx context.Context) error {

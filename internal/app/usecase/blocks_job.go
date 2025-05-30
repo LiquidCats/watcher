@@ -6,6 +6,7 @@ import (
 
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
@@ -18,6 +19,7 @@ type BlocksJob struct {
 	state     state.State[entities.BlockHash]
 	rpcClient rpc.Client
 	workerCh  runner.ChanWrite[entities.Block]
+	blockPub  bus.Publisher[entities.Block]
 }
 
 func NewBlocksJob(
@@ -25,12 +27,14 @@ func NewBlocksJob(
 	state state.State[entities.BlockHash],
 	rpcClient rpc.Client,
 	workerCh runner.ChanWrite[entities.Block],
+	blockPub bus.Publisher[entities.Block],
 ) *BlocksJob {
 	return &BlocksJob{
 		cfg:       cfg,
 		state:     state,
 		rpcClient: rpcClient,
 		workerCh:  workerCh,
+		blockPub:  blockPub,
 	}
 }
 
@@ -64,14 +68,15 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 	var blocks []entities.Block
 
 	for {
-		block, err = uc.rpcClient.GetBlockByHash(ctx, blockHash)
+		block, err = uc.rpcClient.GetBlockByHash(ctx, blockHash, false)
 		if err != nil {
 			return eris.Wrapf(err, "get block [%s]", blockHash)
 		}
 
 		blocks = append(blocks, block)
 
-		if slices.Contains(blocksState, block.GetPrevHash()) {
+		exists := slices.Contains(blocksState, block.GetPrevHash())
+		if exists {
 			break
 		}
 
@@ -88,6 +93,26 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 	slices.Reverse(blocks)
 
 	for _, block := range blocks {
+		err = uc.blockPub.PublishTo(ctx, uc.cfg.Topics.Blocks, block)
+		if err != nil {
+			return eris.Wrap(err, "publish block")
+		}
+
+		if len(blocksState) >= uc.cfg.Persist.Capacity {
+			blocksState = append(blocksState[1:], block.GetHash())
+		} else {
+			blocksState = append(blocksState, block.GetHash())
+		}
+
+		if err = uc.state.Set(
+			ctx,
+			uc.cfg.Key("blocks"),
+			blocksState,
+			uc.cfg.Persist.Duration,
+		); err != nil {
+			logger.Error().Err(err).Msg("set state")
+		}
+
 		uc.workerCh <- block
 	}
 

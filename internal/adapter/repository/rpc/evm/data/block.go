@@ -23,7 +23,7 @@ func (x HexUint64) String() string {
 	return string(x)
 }
 
-type Block struct {
+type Block[T any] struct {
 	Difficulty      HexUint64          `json:"difficulty"`
 	ExtraData       string             `json:"extraData"`
 	GasLimit        string             `json:"gasLimit"`
@@ -41,29 +41,38 @@ type Block struct {
 	StateRoot       string             `json:"stateRoot"`
 	Timestamp       string             `json:"timestamp"`
 	TotalDifficulty string             `json:"totalDifficulty"`
-	Transactions    []*Transaction     `json:"transactions"`
+	Transactions    []T                `json:"transactions"`
 }
 
 type LatestBlock struct {
 	Hash entities.BlockHash `json:"hash"`
 }
 
-func (b *Block) GetHeight() entities.BlockHeight {
+func (b *Block[T]) GetHeight() entities.BlockHeight {
 	return entities.BlockHeight(b.Number.Uint64())
 }
 
-func (b *Block) GetHash() entities.BlockHash {
+func (b *Block[T]) GetHash() entities.BlockHash {
 	return b.Hash
 }
 
-func (b *Block) GetPrevHash() entities.BlockHash {
+func (b *Block[T]) GetPrevHash() entities.BlockHash {
 	return b.ParentHash
 }
 
-func (b *Block) GetTransactions() []entities.Transaction {
+func (b *Block[T]) GetTransactions() []entities.Transaction {
+	if len(b.Transactions) == 0 {
+		return nil
+	}
+
 	txs := make([]entities.Transaction, len(b.Transactions))
+
 	for i, tx := range b.Transactions {
-		txs[i] = tx
+		transac, ok := any(tx).(*Transaction)
+		if !ok {
+			continue
+		}
+		txs[i] = transac
 	}
 
 	return txs

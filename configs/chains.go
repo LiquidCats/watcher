@@ -44,9 +44,8 @@ type PersistConfig struct {
 }
 
 type WorkersConfig struct {
-	TxIDWorkerCount        uint `default:"5" yaml:"txid_worker_count"`
-	BlockWorkerCount       uint `default:"3" yaml:"block_worker_count"`
-	TransactionWorkerCount uint `default:"1" yaml:"transaction_worker_count"`
+	TxIDWorkerCount              uint `default:"3" yaml:"txid_worker_count"`
+	BlockTransactionsWorkerCount uint `default:"5" yaml:"block_transactions_worker_count"`
 }
 
 func (app ChainConfig) Key(k string) string {

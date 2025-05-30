@@ -8,7 +8,7 @@ import (
 
 type Client interface {
 	GetLatestBlockHash(ctx context.Context) (entities.BlockHash, error)
-	GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error)
+	GetBlockByHash(ctx context.Context, hash entities.BlockHash, withTx bool) (entities.Block, error)
 	GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error)
 	GetMempool(ctx context.Context) ([]entities.TxID, error)
 }

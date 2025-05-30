@@ -25,7 +25,7 @@ import (
 const app = "watcher"
 const (
 	TransactionChannelCap = 10000
-	BlocksChannelCap      = 1000
+	BlocksChannelCap      = 128
 )
 
 func main() {
@@ -81,13 +81,12 @@ func main() {
 	}
 
 	for _, chainConfig := range cfg.Chains {
-		transactionChan := make(chan entities.Transaction, TransactionChannelCap)
 		blockChan := make(chan entities.Block, BlocksChannelCap)
 		txIDChan := make(chan entities.TxID, TransactionChannelCap)
 
 		rpcRepository, chainErr := rpc.Factory(chainConfig)
 		if chainErr != nil {
-			logger.Fatal().Any("err", eris.ToString(err, true)).Msg("rpc adapter creation")
+			logger.Fatal().Any("err", eris.ToString(err, true)).Msg("rpc adapter")
 			return
 		}
 
@@ -97,15 +96,14 @@ func main() {
 			return
 		}
 
-		blocksJob := usecase.NewBlocksJob(chainConfig, blocksState, rpcRepository, blockChan)
+		blocksJob := usecase.NewBlocksJob(chainConfig, blocksState, rpcRepository, blockChan, blocksPublisher)
 		mempoolJob := usecase.NewMempoolJob(chainConfig, rpcRepository, txIDChan, oldMempool)
 
-		blockProcessor := runner.NewProcessor(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
-		mempoolProcessor := runner.NewProcessor(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
+		blockTicker := runner.NewTicker(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
+		mempoolTicker := runner.NewTicker(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
 
-		txIDHandler := usecase.NewTxIDHandler(rpcRepository, transactionChan)
-		blockHandler := usecase.NewBlockHandler(chainConfig, blocksPublisher, blocksState, transactionChan)
-		transactionHandler := usecase.NewTransactionHandler(chainConfig, transactionsPublisher)
+		txIDHandler := usecase.NewTxIDHandler(chainConfig, rpcRepository, transactionsPublisher)
+		blockTransactionsHandler := usecase.NewBlockTransactionsHandler(chainConfig, rpcRepository, transactionsPublisher)
 
 		txIDWorker := runner.NewWorker(
 			chainConfig.Key("txid"),
@@ -115,29 +113,20 @@ func main() {
 		)
 		transactionWorker := runner.NewWorker(
 			chainConfig.Key("tx"),
-			chainConfig.Workers.TransactionWorkerCount,
-			transactionChan,
-			transactionHandler,
-		)
-		blockWorker := runner.NewWorker(
-			chainConfig.Key("block"),
-			chainConfig.Workers.BlockWorkerCount,
+			chainConfig.Workers.BlockTransactionsWorkerCount,
 			blockChan,
-			blockHandler,
+			blockTransactionsHandler,
 		)
 
 		runners = append(
 			runners,
-			blockProcessor.Run,
-			mempoolProcessor.Run,
+			//
+			blockTicker.Run,
+			mempoolTicker.Run,
+			//
 			txIDWorker.Run,
 			transactionWorker.Run,
-			blockWorker.Run,
 		)
-	}
-
-	if err != nil {
-		logger.Fatal().Stack().Err(err).Msg("factory")
 	}
 
 	logger.Info().Msg("starting application")

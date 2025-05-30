@@ -53,7 +53,7 @@ func (c *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, er
 	return *resp, nil
 }
 
-func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
+func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash, withTx bool) (entities.Block, error) {
 	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.NodeURL, "getblock", []any{hash, 2})
 	if err != nil {
 		return nil, eris.Wrap(err, "GetBlockByHash: prepare")
@@ -61,12 +61,17 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (e
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := jsonrpc.Execute[data.Block](req)
+	var block entities.Block
+	if withTx {
+		block, err = jsonrpc.Execute[data.Block[*data.Transaction]](req)
+	} else {
+		block, err = jsonrpc.Execute[data.Block[entities.TxID]](req)
+	}
 	if err != nil {
 		return nil, eris.Wrap(err, "GetBlockByHash: execute")
 	}
 
-	return resp, nil
+	return block, nil
 }
 
 func (c *Client) GetTransactionByTxID(ctx context.Context, hash entities.TxID) (entities.Transaction, error) {

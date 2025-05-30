@@ -54,7 +54,14 @@ func (c *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, er
 }
 
 func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash, withTx bool) (entities.Block, error) {
-	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.NodeURL, "getblock", []any{hash, 2})
+	var verbosity int
+	if withTx {
+		verbosity = 2
+	} else {
+		verbosity = 1
+	}
+
+	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.NodeURL, "getblock", []any{hash, verbosity})
 	if err != nil {
 		return nil, eris.Wrap(err, "GetBlockByHash: prepare")
 	}

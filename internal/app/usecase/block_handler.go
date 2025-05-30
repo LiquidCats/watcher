@@ -37,6 +37,8 @@ func NewBlockHandler(
 func (uc *BlockHandler) Handle(ctx context.Context, block entities.Block) error {
 	logger := zerolog.Ctx(ctx).With().Any("block_hash", block.GetHash()).Logger()
 
+	logger.Debug().Msg("block received")
+
 	for _, tx := range block.GetTransactions() {
 		uc.transactionCh <- tx
 	}

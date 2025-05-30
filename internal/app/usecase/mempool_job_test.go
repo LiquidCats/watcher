@@ -23,23 +23,15 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 			Duration: time.Hour,
 		},
 	}
-	state := mocks.NewMockState[entities.TxID](t)
 	client := mocks.NewMockClient(t)
 
 	testCh := make(chan entities.TxID, 2)
-	uc := usecase.NewMempoolJob(cfg, state, client, testCh)
+	uc := usecase.NewMempoolJob(cfg, client, testCh, []entities.TxID{})
 
 	newMempool := []entities.TxID{"tx1", "tx3"}
 	client.
 		On("GetMempool", mock.Anything).
 		Return(newMempool, nil)
-
-	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.mempool").
-		Once().
-		Return([]entities.TxID{}, nil)
-	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.mempool", newMempool, cfg.Persist.Duration).
-		Once().
-		Return(nil)
 
 	err := uc.Handle(t.Context())
 	require.NoError(t, err)

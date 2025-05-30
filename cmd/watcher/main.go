@@ -75,7 +75,6 @@ func main() {
 	transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
 
 	blocksState := state.NewPersister[entities.BlockHash](dbRepository)
-	transactionState := state.NewPersister[entities.TxID](dbRepository)
 
 	runners := []graceful.Runner{
 		graceful.Signals,
@@ -89,10 +88,17 @@ func main() {
 		rpcRepository, chainErr := rpc.Factory(chainConfig)
 		if chainErr != nil {
 			logger.Fatal().Any("err", eris.ToString(err, true)).Msg("rpc adapter creation")
+			return
+		}
+
+		oldMempool, mempoolErr := rpcRepository.GetMempool(ctx)
+		if mempoolErr != nil {
+			logger.Fatal().Any("err", eris.ToString(mempoolErr, true)).Msg("old mempool")
+			return
 		}
 
 		blocksJob := usecase.NewBlocksJob(chainConfig, blocksState, rpcRepository, blockChan)
-		mempoolJob := usecase.NewMempoolJob(chainConfig, transactionState, rpcRepository, txIDChan)
+		mempoolJob := usecase.NewMempoolJob(chainConfig, rpcRepository, txIDChan, oldMempool)
 
 		blockProcessor := runner.NewProcessor(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
 		mempoolProcessor := runner.NewProcessor(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
@@ -101,9 +107,24 @@ func main() {
 		blockHandler := usecase.NewBlockHandler(chainConfig, blocksPublisher, blocksState, transactionChan)
 		transactionHandler := usecase.NewTransactionHandler(chainConfig, transactionsPublisher)
 
-		txIDWorker := runner.NewWorker(chainConfig.Workers.TxIDWorkerCount, txIDChan, txIDHandler)
-		transactionWorker := runner.NewWorker(chainConfig.Workers.TransactionWorkerCount, transactionChan, transactionHandler)
-		blockWorker := runner.NewWorker(chainConfig.Workers.BlockWorkerCount, blockChan, blockHandler)
+		txIDWorker := runner.NewWorker(
+			chainConfig.Key("txid"),
+			chainConfig.Workers.TxIDWorkerCount,
+			txIDChan,
+			txIDHandler,
+		)
+		transactionWorker := runner.NewWorker(
+			chainConfig.Key("tx"),
+			chainConfig.Workers.TransactionWorkerCount,
+			transactionChan,
+			transactionHandler,
+		)
+		blockWorker := runner.NewWorker(
+			chainConfig.Key("block"),
+			chainConfig.Workers.BlockWorkerCount,
+			blockChan,
+			blockHandler,
+		)
 
 		runners = append(
 			runners,

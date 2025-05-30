@@ -34,7 +34,7 @@ func (uc *TransactionHandler) Handle(ctx context.Context, transaction entities.T
 		return eris.Wrap(err, "publish transaction")
 	}
 
-	logger.Info().Msg("published transaction")
+	logger.Debug().Msg("published transaction")
 
 	return nil
 }

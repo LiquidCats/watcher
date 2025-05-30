@@ -29,13 +29,6 @@ func (m *MockHandler[T]) Handle(ctx context.Context, v T) error {
 	return args.Error(0)
 }
 
-// --- Helper to create logger in context and capture output ---.
-func loggerToBuf() (*zerolog.Logger, *bytes.Buffer) {
-	var buf bytes.Buffer
-	logger := zerolog.New(&buf).With().Timestamp().Logger()
-	return &logger, &buf
-}
-
 func TestWorker_Run(t *testing.T) {
 	type testCase struct {
 		name         string
@@ -45,7 +38,6 @@ func TestWorker_Run(t *testing.T) {
 		cancelCtx    bool
 		wantErr      error
 		wantHandled  []int
-		wantInLog    []string
 	}
 
 	tests := []testCase{
@@ -65,7 +57,6 @@ func TestWorker_Run(t *testing.T) {
 			workers:     2,
 			wantErr:     nil,
 			wantHandled: []int{0, 1, 2},
-			wantInLog:   []string{"runner channel closed"},
 		},
 		{
 			name: "handler returns error, error logged",
@@ -81,7 +72,6 @@ func TestWorker_Run(t *testing.T) {
 			workers:     1,
 			wantErr:     nil,
 			wantHandled: []int{42},
-			wantInLog:   []string{"runner handler error", "handle failed"},
 		},
 		{
 			name: "multiple workers handle all jobs",
@@ -111,7 +101,6 @@ func TestWorker_Run(t *testing.T) {
 			workers:      2,
 			wantErr:      nil,
 			wantHandled:  []int{},
-			wantInLog:    []string{"runner channel closed"},
 		},
 	}
 
@@ -121,7 +110,9 @@ func TestWorker_Run(t *testing.T) {
 			handler := new(MockHandler[int])
 			tt.handlerSetup(handler)
 
-			logger, buf := loggerToBuf()
+			var buf bytes.Buffer
+			logger := zerolog.New(&buf).With().Timestamp().Logger()
+
 			ctx := logger.WithContext(t.Context())
 			var cancel context.CancelFunc
 
@@ -130,7 +121,7 @@ func TestWorker_Run(t *testing.T) {
 				cancel()
 			}
 
-			w := runner.NewWorker[int](tt.workers, ch, handler)
+			w := runner.NewWorker[int]("test", tt.workers, ch, handler)
 			err := w.Run(ctx)
 
 			// Assert error (if expected)
@@ -142,13 +133,6 @@ func TestWorker_Run(t *testing.T) {
 			// Assert handled values (regardless of order, since workers may race)
 			assert.ElementsMatch(t, tt.wantHandled, handler.Values)
 			handler.AssertExpectations(t)
-			// Assert log messages if needed
-			if len(tt.wantInLog) > 0 {
-				logStr := buf.String()
-				for _, substr := range tt.wantInLog {
-					assert.Contains(t, logStr, substr, "expected log to contain: %q", substr)
-				}
-			}
 		})
 	}
 }

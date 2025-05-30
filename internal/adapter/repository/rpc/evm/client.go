@@ -37,18 +37,24 @@ func (c *Client) GetLatestBlockHash(ctx context.Context) (entities.BlockHash, er
 	return block.Hash, nil
 }
 
-func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash) (entities.Block, error) {
+func (c *Client) GetBlockByHash(ctx context.Context, hash entities.BlockHash, withTx bool) (entities.Block, error) {
 	logger := zerolog.Ctx(ctx)
 	logger.Debug().Any("block_hash", hash).Msg("DEBUG")
 
-	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.NodeURL, "eth_getBlockByHash", []any{string(hash), true})
+	req, err := jsonrpc.Prepare[[]any](ctx, c.cfg.NodeURL, "eth_getBlockByHash", []any{string(hash), withTx})
 	if err != nil {
 		return nil, eris.Wrapf(err, "prepare get block by hash %s", hash)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	block, err := jsonrpc.Execute[data.Block](req)
+	var block entities.Block
+	if withTx {
+		block, err = jsonrpc.Execute[data.Block[*data.Transaction]](req)
+	} else {
+		block, err = jsonrpc.Execute[data.Block[entities.TxID]](req)
+	}
+
 	if err != nil {
 		return nil, eris.Wrapf(err, "execute get block by hash %s", hash)
 	}

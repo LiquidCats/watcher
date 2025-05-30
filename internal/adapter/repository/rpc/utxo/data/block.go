@@ -4,15 +4,15 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 )
 
-type Block struct {
+type Block[T any] struct {
 	Hash              entities.BlockHash   `json:"hash"`
 	Confirmations     int                  `json:"confirmations"`
 	Height            entities.BlockHeight `json:"height"`
 	Version           int                  `json:"version"`
 	VersionHex        string               `json:"versionHex"`
-	Merkleroot        string               `json:"merkleroot"`
+	MerkleRoot        string               `json:"merkleroot"`
 	Time              int                  `json:"time"`
-	Mediantime        int                  `json:"mediantime"`
+	MedianTime        int                  `json:"mediantime"`
 	Nonce             int                  `json:"nonce"`
 	Bits              string               `json:"bits"`
 	Target            string               `json:"target"`
@@ -24,25 +24,29 @@ type Block struct {
 	StrippedSize      int                  `json:"strippedsize"`
 	Size              int                  `json:"size"`
 	Weight            int                  `json:"weight"`
-	Tx                []*Transaction       `json:"tx"`
+	Tx                []T                  `json:"tx"`
 }
 
-func (b *Block) GetHeight() entities.BlockHeight {
+func (b *Block[T]) GetHeight() entities.BlockHeight {
 	return b.Height
 }
 
-func (b *Block) GetHash() entities.BlockHash {
+func (b *Block[T]) GetHash() entities.BlockHash {
 	return b.Hash
 }
 
-func (b *Block) GetPrevHash() entities.BlockHash {
+func (b *Block[T]) GetPrevHash() entities.BlockHash {
 	return b.PreviousBlockHash
 }
 
-func (b *Block) GetTransactions() []entities.Transaction {
+func (b *Block[T]) GetTransactions() []entities.Transaction {
 	txs := make([]entities.Transaction, len(b.Tx))
 	for i, tx := range b.Tx {
-		txs[i] = tx
+		transac, ok := any(tx).(*Transaction)
+		if !ok {
+			continue
+		}
+		txs[i] = transac
 	}
 
 	return txs

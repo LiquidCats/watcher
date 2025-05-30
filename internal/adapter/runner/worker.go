@@ -10,7 +10,7 @@ import (
 
 type Worker[T any] struct {
 	name         string
-	workerCh     runner.ChanRead[T]
+	workerCh     chan T
 	handler      runner.Handler[T]
 	workersCount uint
 }
@@ -18,7 +18,7 @@ type Worker[T any] struct {
 func NewWorker[T any](
 	name string,
 	workersCount uint,
-	workerCh runner.ChanRead[T],
+	workerCh chan T,
 	handler runner.Handler[T],
 ) *Worker[T] {
 	return &Worker[T]{
@@ -30,6 +30,8 @@ func NewWorker[T any](
 }
 
 func (w *Worker[T]) Run(ctx context.Context) error {
+	defer close(w.workerCh)
+
 	logger := zerolog.Ctx(ctx).
 		With().
 		Caller().

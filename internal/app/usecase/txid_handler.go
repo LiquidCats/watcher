@@ -3,28 +3,37 @@ package usecase
 import (
 	"context"
 
+	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
-	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
 	"github.com/rotisserie/eris"
 
 	"github.com/rs/zerolog"
 )
 
 type TxIDHandler struct {
-	rpcClient     rpc.Client
-	transactionCh runner.ChanWrite[entities.Transaction]
+	cfg       configs.ChainConfig
+	rpcClient rpc.Client
+	publisher bus.Publisher[entities.Transaction]
 }
 
-func NewTxIDHandler(rpcClient rpc.Client, transactionCh runner.ChanWrite[entities.Transaction]) *TxIDHandler {
+func NewTxIDHandler(cfg configs.ChainConfig, rpcClient rpc.Client, publisher bus.Publisher[entities.Transaction]) *TxIDHandler {
 	return &TxIDHandler{
-		rpcClient:     rpcClient,
-		transactionCh: transactionCh,
+		cfg:       cfg,
+		rpcClient: rpcClient,
+		publisher: publisher,
 	}
 }
 
 func (uc *TxIDHandler) Handle(ctx context.Context, txid entities.TxID) error {
-	logger := zerolog.Ctx(ctx).With().Any("txid", txid).Logger()
+	logger := zerolog.Ctx(ctx).With().
+		Str("name", "txid_handler").
+		Any("driver", uc.cfg.Driver).
+		Any("type", uc.cfg.Type).
+		Any("chain", uc.cfg.Chain).
+		Any("txid", txid).
+		Logger()
 
 	tx, err := uc.rpcClient.GetTransactionByTxID(ctx, txid)
 	if err != nil {
@@ -33,7 +42,10 @@ func (uc *TxIDHandler) Handle(ctx context.Context, txid entities.TxID) error {
 
 	logger.Info().Msg("got transaction by hash")
 
-	uc.transactionCh <- tx
+	err = uc.publisher.PublishTo(ctx, uc.cfg.Topics.Transactions, tx)
+	if err != nil {
+		return eris.Wrap(err, "publish mempool transaction")
+	}
 
 	return nil
 }

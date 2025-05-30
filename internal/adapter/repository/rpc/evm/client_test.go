@@ -42,10 +42,10 @@ func TestClient_GetBlockByHash(t *testing.T) {
 
 	ctx := t.Context()
 
-	r, err := client.GetBlockByHash(ctx, "0xa2330de84ec75919db70f4b33e658cb1a9fa34557ad0082c7db87f075c96d6d2")
+	r, err := client.GetBlockByHash(ctx, "0xa2330de84ec75919db70f4b33e658cb1a9fa34557ad0082c7db87f075c96d6d2", true)
 	require.NoError(t, err)
 
-	result, ok := r.(*data.Block)
+	result, ok := r.(*data.Block[*data.Transaction])
 	require.True(t, ok)
 
 	assert.Equal(t, entities.BlockHash("0xa2330de84ec75919db70f4b33e658cb1a9fa34557ad0082c7db87f075c96d6d2"), result.Hash)

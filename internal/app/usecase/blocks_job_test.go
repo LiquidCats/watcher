@@ -27,12 +27,16 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 			Capacity: 6,
 			Duration: time.Hour,
 		},
+		Topics: configs.TopicsConfig{
+			Blocks: "blocks",
+		},
 	}
 
 	state := mocks.NewMockState[entities.BlockHash](t)
 	client := mocks.NewMockClient(t)
+	publisher := mocks.NewMockPublisher[entities.Block](t)
 
-	block1 := &data.Block{
+	block1 := &data.Block[*data.Transaction]{
 		Hash:              "block1",
 		Height:            1,
 		PreviousBlockHash: "block0",
@@ -47,7 +51,7 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 			},
 		},
 	}
-	block2 := &data.Block{
+	block2 := &data.Block[*data.Transaction]{
 		Hash:              "block2",
 		Height:            2,
 		PreviousBlockHash: "block1",
@@ -63,21 +67,23 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		},
 	}
 
-	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.blocks").Once().Return(nil, nil)
+	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.blocks").Once().Return([]entities.BlockHash{block1.Hash}, nil)
+	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.blocks", []entities.BlockHash{
+		block1.Hash, block2.Hash,
+	}, cfg.Persist.Duration).Once().Return(nil, nil)
 	client.On("GetLatestBlockHash", mock.Anything).Once().Return(block2.Hash, nil)
-	client.On("GetBlockByHash", mock.Anything, block2.Hash).Once().Return(block2, nil)
-	client.On("GetBlockByHash", mock.Anything, block1.Hash).Once().Return(block1, nil)
+	client.On("GetBlockByHash", mock.Anything, block2.Hash, false).Once().Return(block2, nil)
+	publisher.On("PublishTo", mock.Anything, "blocks", block2).Once().Return(nil)
 
 	testCh := make(chan entities.Block, 2)
 	defer close(testCh)
 
-	uc := usecase.NewBlocksJob(cfg, state, client, testCh)
+	uc := usecase.NewBlocksJob(cfg, state, client, testCh, publisher)
 
 	err := uc.Handle(t.Context())
 	require.NoError(t, err)
 
-	b1, b2 := <-testCh, <-testCh
+	b2 := <-testCh
 
-	assert.Equal(t, block1.GetHash(), b1.GetHash())
 	assert.Equal(t, block2.GetHash(), b2.GetHash())
 }

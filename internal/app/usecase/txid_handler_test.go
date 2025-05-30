@@ -2,7 +2,9 @@ package usecase_test
 
 import (
 	"testing"
+	"time"
 
+	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc/utxo/data"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/usecase"
@@ -13,6 +15,22 @@ import (
 
 func TestTxIDHandler_Handle(t *testing.T) {
 	ctx := t.Context()
+	cfg := configs.ChainConfig{
+		Driver: entities.DriverRPC,
+		Type:   entities.TypeUtxo,
+		Chain:  "bitcoin",
+		Scan: configs.ScanConfig{
+			Depth: 2,
+		},
+		Persist: configs.PersistConfig{
+			Capacity: 6,
+			Duration: time.Hour,
+		},
+		Topics: configs.TopicsConfig{
+			Transactions: "test-transactions",
+		},
+	}
+
 	tx := &data.Transaction{
 		TxID:          "tx_hash_1",
 		Vin:           nil,
@@ -23,15 +41,13 @@ func TestTxIDHandler_Handle(t *testing.T) {
 	}
 
 	rpc := mocks.NewMockClient(t)
-	ch := make(chan entities.Transaction, 1)
+	publisher := mocks.NewMockPublisher[entities.Transaction](t)
 
 	rpc.On("GetTransactionByTxID", ctx, tx.TxID).Once().Return(tx, nil)
+	publisher.On("PublishTo", ctx, cfg.Topics.Transactions, tx).Once().Return(nil)
 
-	uc := usecase.NewTxIDHandler(rpc, ch)
+	uc := usecase.NewTxIDHandler(cfg, rpc, publisher)
 
 	err := uc.Handle(ctx, tx.TxID)
 	require.NoError(t, err)
-
-	tx1 := <-ch
-	require.Equal(t, tx.GetTxID(), tx1.GetTxID())
 }

@@ -23,6 +23,10 @@ func TestTransactionHandler_Handle(t *testing.T) {
 		Confirmations: 0,
 		BlockHash:     "",
 	}
+	block := &data.Block[*data.Transaction]{
+		Hash: "test_hash_1",
+		Tx:   []*data.Transaction{tx},
+	}
 	cfg := configs.ChainConfig{
 		Topics: configs.TopicsConfig{
 			Transactions: "test-transactions",
@@ -30,11 +34,13 @@ func TestTransactionHandler_Handle(t *testing.T) {
 	}
 
 	pub := mocks.NewMockPublisher[entities.Transaction](t)
+	rpc := mocks.NewMockClient(t)
 
-	pub.On("PublishTo", mock.Anything, cfg.Topics.Transactions, tx).Return(nil)
+	rpc.On("GetBlockByHash", mock.Anything, block.GetHash(), true).Once().Return(block, nil)
+	pub.On("PublishTo", mock.Anything, cfg.Topics.Transactions, tx).Once().Return(nil)
 
-	uc := usecase.NewTransactionHandler(cfg, pub)
+	uc := usecase.NewBlockTransactionsHandler(cfg, rpc, pub)
 
-	err := uc.Handle(ctx, tx)
+	err := uc.Handle(ctx, block)
 	require.NoError(t, err)
 }

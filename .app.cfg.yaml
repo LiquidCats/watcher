@@ -8,31 +8,31 @@ chains:
       block_transactions_worker_count: 5
     scan:
       depth: 10
-      interval: 10s
+      interval: 1s
     persist:
-      capacity: 10
-      duration: 9000h
+      capacity: 32
+      duration: 1h
     topics:
       transactions: eth-transactions
       blocks: eth-blocks
     rpc:
       node_url: http://eth:8545
-
-  - chain: bitcoin
-    iso: btc
-    type: utxo
-    driver: rpc
-    workers:
-      txid_worker_count: 3
-      block_transactions_worker_count: 5
-    scan:
-      depth: 10
-      interval: 1s
-    persist:
-      bocks: 10
-      duration: 1h
-    topics:
-      transactions: btc-transactions
-      blocks: btc-blocks
-    rpc:
-      node_url: http://btc:password@btc:8332
+#
+#  - chain: bitcoin
+#    iso: btc
+#    type: utxo
+#    driver: rpc
+#    workers:
+#      txid_worker_count: 3
+#      block_transactions_worker_count: 5
+#    scan:
+#      depth: 6
+#      interval: 1s
+#    persist:
+#      bocks: 10
+#      duration: 1h
+#    topics:
+#      transactions: btc-transactions
+#      blocks: btc-blocks
+#    rpc:
+#      node_url: http://btc:password@btc:8332

@@ -70,7 +70,7 @@ func (w *Worker[T]) runner(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Debug().Msg("context closed")
+			logger.Debug().Msg("context canceled")
 			return ctx.Err()
 		case v, ok := <-w.workerCh:
 			if !ok {

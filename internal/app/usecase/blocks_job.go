@@ -19,7 +19,7 @@ type BlocksJob struct {
 	state     state.State[entities.BlockHash]
 	rpcClient rpc.Client
 	workerCh  runner.ChanWrite[entities.Block]
-	blockPub  bus.Publisher[entities.Block]
+	publisher bus.Publisher[entities.Block]
 }
 
 func NewBlocksJob(
@@ -27,14 +27,14 @@ func NewBlocksJob(
 	state state.State[entities.BlockHash],
 	rpcClient rpc.Client,
 	workerCh runner.ChanWrite[entities.Block],
-	blockPub bus.Publisher[entities.Block],
+	publisher bus.Publisher[entities.Block],
 ) *BlocksJob {
 	return &BlocksJob{
 		cfg:       cfg,
 		state:     state,
 		rpcClient: rpcClient,
 		workerCh:  workerCh,
-		blockPub:  blockPub,
+		publisher: publisher,
 	}
 }
 
@@ -92,16 +92,16 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 
 	slices.Reverse(blocks)
 
-	for _, block := range blocks {
-		err = uc.blockPub.PublishTo(ctx, uc.cfg.Topics.Blocks, block)
+	for _, b := range blocks {
+		err = uc.publisher.PublishTo(ctx, uc.cfg.Topics.Blocks, b)
 		if err != nil {
 			return eris.Wrap(err, "publish block")
 		}
 
 		if len(blocksState) >= uc.cfg.Persist.Capacity {
-			blocksState = append(blocksState[1:], block.GetHash())
+			blocksState = append(blocksState[1:], b.GetHash())
 		} else {
-			blocksState = append(blocksState, block.GetHash())
+			blocksState = append(blocksState, b.GetHash())
 		}
 
 		if err = uc.state.Set(
@@ -113,7 +113,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 			logger.Error().Err(err).Msg("set state")
 		}
 
-		uc.workerCh <- block
+		uc.workerCh <- b
 	}
 
 	return nil

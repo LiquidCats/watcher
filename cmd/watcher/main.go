@@ -71,9 +71,6 @@ func main() {
 
 	dbRepository := database.New(pool)
 
-	blocksPublisher := redis.NewPublisher[entities.Block](redisClient)
-	transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
-
 	blocksState := state.NewPersister[entities.BlockHash](dbRepository)
 
 	runners := []graceful.Runner{
@@ -83,6 +80,9 @@ func main() {
 	for _, chainConfig := range cfg.Chains {
 		blockChan := make(chan entities.Block, BlocksChannelCap)
 		txIDChan := make(chan entities.TxID, TransactionChannelCap)
+
+		blocksPublisher := redis.NewPublisher[entities.Block](redisClient)
+		transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
 
 		rpcRepository, chainErr := rpc.Factory(chainConfig)
 		if chainErr != nil {

@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"sync"
 
 	"github.com/bytedance/sonic"
 	"github.com/redis/go-redis/v9"
@@ -9,6 +10,7 @@ import (
 )
 
 type Publisher[T any] struct {
+	mu     sync.Mutex
 	client *redis.Client
 }
 

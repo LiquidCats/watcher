@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/state"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
@@ -21,7 +22,7 @@ func TestState_Get(t *testing.T) {
 		UpdatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}, nil)
 
-	st := state.NewPersister[string](stateDB)
+	st := state.NewPersister[string](configs.PersistConfig{Capacity: 6}, stateDB)
 
 	val, err := st.Get(ctx, "test")
 	require.NoError(t, err)
@@ -37,8 +38,8 @@ func TestState_Set(t *testing.T) {
 		Value: []byte(`["test_value"]`),
 	}).Return(nil)
 
-	st := state.NewPersister[string](stateDB)
+	st := state.NewPersister[string](configs.PersistConfig{Capacity: 6}, stateDB)
 
-	err := st.Set(ctx, "test", []string{"test_value"}, time.Second)
+	err := st.Set(ctx, "test", "test_value", time.Second)
 	require.NoError(t, err)
 }

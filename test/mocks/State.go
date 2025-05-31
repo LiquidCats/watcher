@@ -96,7 +96,7 @@ func (_c *MockState_Get_Call[T]) RunAndReturn(run func(ctx context.Context, key 
 }
 
 // Set provides a mock function for the type MockState
-func (_mock *MockState[T]) Set(ctx context.Context, key string, value []T, period time.Duration) error {
+func (_mock *MockState[T]) Set(ctx context.Context, key string, value T, period time.Duration) error {
 	ret := _mock.Called(ctx, key, value, period)
 
 	if len(ret) == 0 {
@@ -104,7 +104,7 @@ func (_mock *MockState[T]) Set(ctx context.Context, key string, value []T, perio
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []T, time.Duration) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, T, time.Duration) error); ok {
 		r0 = returnFunc(ctx, key, value, period)
 	} else {
 		r0 = ret.Error(0)
@@ -126,9 +126,9 @@ func (_e *MockState_Expecter[T]) Set(ctx interface{}, key interface{}, value int
 	return &MockState_Set_Call[T]{Call: _e.mock.On("Set", ctx, key, value, period)}
 }
 
-func (_c *MockState_Set_Call[T]) Run(run func(ctx context.Context, key string, value []T, period time.Duration)) *MockState_Set_Call[T] {
+func (_c *MockState_Set_Call[T]) Run(run func(ctx context.Context, key string, value T, period time.Duration)) *MockState_Set_Call[T] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].([]T), args[3].(time.Duration))
+		run(args[0].(context.Context), args[1].(string), args[2].(T), args[3].(time.Duration))
 	})
 	return _c
 }
@@ -138,7 +138,7 @@ func (_c *MockState_Set_Call[T]) Return(err error) *MockState_Set_Call[T] {
 	return _c
 }
 
-func (_c *MockState_Set_Call[T]) RunAndReturn(run func(ctx context.Context, key string, value []T, period time.Duration) error) *MockState_Set_Call[T] {
+func (_c *MockState_Set_Call[T]) RunAndReturn(run func(ctx context.Context, key string, value T, period time.Duration) error) *MockState_Set_Call[T] {
 	_c.Call.Return(run)
 	return _c
 }

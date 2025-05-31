@@ -45,9 +45,7 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 	}
 
 	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.blocks").Once().Return([]entities.BlockHash{block1.Hash}, nil)
-	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.blocks", []entities.BlockHash{
-		block1.Hash, block2.Hash,
-	}, cfg.Persist.Duration).Once().Return(nil, nil)
+	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.blocks", block2.Hash, cfg.Persist.Duration).Once().Return(nil, nil)
 	client.On("GetLatestBlockHash", mock.Anything).Once().Return(block2.Hash, nil)
 	client.On("GetBlockByHash", mock.Anything, block2.Hash, false).Once().Return(block2, nil)
 	publisher.On("PublishTo", mock.Anything, "blocks", block2).Once().Return(nil)

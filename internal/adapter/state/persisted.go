@@ -87,7 +87,7 @@ func (s *PersistedState[T]) Get(ctx context.Context, key string) ([]T, error) {
 		return nil, eris.Wrap(err, "failed to decode state")
 	}
 
-	s.value = value[:]
+	s.value = value
 	s.lastUpdated = state.UpdatedAt.Time
 
 	return s.value, nil

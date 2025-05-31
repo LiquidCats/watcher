@@ -88,9 +88,9 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 		}
 	}
 
-	logger.Info().Any("blocks_len", len(blocks)).Msg("blocks collected")
-
 	slices.Reverse(blocks)
+
+	logger.Info().Any("blocks_len", len(blocks)).Msg("blocks collected")
 
 	for _, b := range blocks {
 		err = uc.publisher.PublishTo(ctx, uc.cfg.Topics.Blocks, b)
@@ -98,22 +98,18 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 			return eris.Wrap(err, "publish block")
 		}
 
-		if len(blocksState) >= uc.cfg.Persist.Capacity {
-			blocksState = append(blocksState[1:], b.GetHash())
-		} else {
-			blocksState = append(blocksState, b.GetHash())
-		}
-
 		if err = uc.state.Set(
 			ctx,
 			uc.cfg.Key("blocks"),
-			blocksState,
+			b.GetHash(),
 			uc.cfg.Persist.Duration,
 		); err != nil {
 			logger.Error().Err(err).Msg("set state")
 		}
 
 		uc.workerCh <- b
+
+		logger.Debug().Any("block_hash", b.GetHash()).Msg("block processed")
 	}
 
 	return nil

@@ -45,6 +45,7 @@ func (uc *BlockTransactionsHandler) Handle(ctx context.Context, block entities.B
 	}
 
 	for _, transaction := range block.GetTransactions() {
+		logger.Debug().Any("txid", transaction.GetTxID()).Msg("publish transaction")
 		err := uc.publisher.PublishTo(ctx, uc.cfg.Topics.Transactions, transaction)
 		if err != nil {
 			logger.Error().
@@ -54,7 +55,7 @@ func (uc *BlockTransactionsHandler) Handle(ctx context.Context, block entities.B
 		}
 	}
 
-	logger.Debug().Msg("block transaction handler done")
+	logger.Debug().Int("txs", len(block.GetTransactions())).Msg("block transactions handled")
 
 	return nil
 }

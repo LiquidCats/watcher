@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
+	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
 )
@@ -51,7 +52,7 @@ func (w *Worker[T]) Run(ctx context.Context) error {
 	defer logger.Info().Msg("background workers stopped")
 
 	if err := g.Wait(); err != nil {
-		return err
+		return eris.Wrap(err, "wait for workers")
 	}
 
 	return nil
@@ -64,13 +65,10 @@ func (w *Worker[T]) runner(ctx context.Context) error {
 		Str("worker_name", w.name).
 		Logger()
 
-	logger.Debug().Msg("runner started")
-	defer logger.Debug().Msg("runner stopped")
-
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Debug().Msg("context canceled")
+			logger.Debug().Any("err", eris.ToJSON(ctx.Err(), true)).Msg("context canceled")
 			return ctx.Err()
 		case v, ok := <-w.workerCh:
 			if !ok {

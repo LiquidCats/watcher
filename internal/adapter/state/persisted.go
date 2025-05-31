@@ -6,36 +6,46 @@ import (
 	"sync"
 	"time"
 
-	database2 "github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
+	"github.com/LiquidCats/watcher/v2/configs"
+	db "github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/database"
 	"github.com/bytedance/sonic"
 	"github.com/rotisserie/eris"
 )
 
 type PersistedState[T any] struct {
+	cfg              configs.PersistConfig
 	persistedStorage database.StateDB
-	value            []T
-	lastUpdated      time.Time
-	mu               sync.Mutex
+
+	value       []T
+	lastUpdated time.Time
+
+	mu sync.Mutex
 }
 
-func NewPersister[T any](persistedStorage database.StateDB) *PersistedState[T] {
+func NewPersister[T any](cfg configs.PersistConfig, persistedStorage database.StateDB) *PersistedState[T] {
 	return &PersistedState[T]{
+		cfg:              cfg,
 		persistedStorage: persistedStorage,
 	}
 }
 
-func (s *PersistedState[T]) Set(ctx context.Context, key string, value []T, period time.Duration) error {
+func (s *PersistedState[T]) Set(ctx context.Context, key string, value T, period time.Duration) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.value = append(s.value, value)
+	if len(s.value) >= s.cfg.Capacity {
+		s.value = s.value[1:]
+	}
+
 	if s.shouldPersist(period) {
-		valueBytes, err := sonic.Marshal(value)
+		valueBytes, err := sonic.Marshal(s.value)
 		if err != nil {
 			return err
 		}
 
-		if err = s.persistedStorage.SetState(ctx, database2.SetStateParams{
+		if err = s.persistedStorage.SetState(ctx, db.SetStateParams{
 			Key:   key,
 			Value: valueBytes,
 		}); err != nil {
@@ -43,8 +53,6 @@ func (s *PersistedState[T]) Set(ctx context.Context, key string, value []T, peri
 		}
 		s.lastUpdated = time.Now()
 	}
-
-	s.value = value
 
 	return nil
 }
@@ -54,7 +62,7 @@ func (s *PersistedState[T]) shouldPersist(period time.Duration) bool {
 		return true
 	}
 
-	return time.Since(s.lastUpdated) >= period
+	return time.Since(s.lastUpdated).Seconds() >= period.Seconds()
 }
 
 func (s *PersistedState[T]) Get(ctx context.Context, key string) ([]T, error) {
@@ -79,7 +87,8 @@ func (s *PersistedState[T]) Get(ctx context.Context, key string) ([]T, error) {
 		return nil, eris.Wrap(err, "failed to decode state")
 	}
 
+	s.value = value[:]
 	s.lastUpdated = state.UpdatedAt.Time
 
-	return value, nil
+	return s.value, nil
 }

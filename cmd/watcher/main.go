@@ -71,8 +71,6 @@ func main() {
 
 	dbRepository := database.New(pool)
 
-	blocksState := state.NewPersister[entities.BlockHash](dbRepository)
-
 	runners := []graceful.Runner{
 		graceful.Signals,
 	}
@@ -81,6 +79,7 @@ func main() {
 		blockChan := make(chan entities.Block, BlocksChannelCap)
 		txIDChan := make(chan entities.TxID, TransactionChannelCap)
 
+		blocksState := state.NewPersister[entities.BlockHash](chainConfig.Persist, dbRepository)
 		blocksPublisher := redis.NewPublisher[entities.Block](redisClient)
 		transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
 
@@ -102,17 +101,17 @@ func main() {
 		blockTicker := runner.NewTicker(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
 		mempoolTicker := runner.NewTicker(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
 
-		txIDHandler := usecase.NewTxIDHandler(chainConfig, rpcRepository, transactionsPublisher)
+		//txIDHandler := usecase.NewTxIDHandler(chainConfig, rpcRepository, transactionsPublisher)
 		blockTransactionsHandler := usecase.NewBlockTransactionsHandler(chainConfig, rpcRepository, transactionsPublisher)
 
-		txIDWorker := runner.NewWorker(
-			chainConfig.Key("txid"),
-			chainConfig.Workers.TxIDWorkerCount,
-			txIDChan,
-			txIDHandler,
-		)
-		transactionWorker := runner.NewWorker(
-			chainConfig.Key("tx"),
+		//txIDWorker := runner.NewWorker(
+		//	chainConfig.Key("txid"),
+		//	chainConfig.Workers.TxIDWorkerCount,
+		//	txIDChan,
+		//	txIDHandler,
+		//)
+		blockTransactionWorker := runner.NewWorker(
+			chainConfig.Key("block_transactions"),
 			chainConfig.Workers.BlockTransactionsWorkerCount,
 			blockChan,
 			blockTransactionsHandler,
@@ -124,8 +123,8 @@ func main() {
 			blockTicker.Run,
 			mempoolTicker.Run,
 			//
-			txIDWorker.Run,
-			transactionWorker.Run,
+			//txIDWorker.Run,
+			blockTransactionWorker.Run,
 		)
 	}
 

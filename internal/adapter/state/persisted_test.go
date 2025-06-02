@@ -40,6 +40,6 @@ func TestState_Set(t *testing.T) {
 
 	st := state.NewPersister[string](configs.PersistConfig{Capacity: 6}, stateDB)
 
-	err := st.Set(ctx, "test", "test_value", time.Second)
+	err := st.Set(ctx, "test", "test_value")
 	require.NoError(t, err)
 }

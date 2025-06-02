@@ -30,7 +30,7 @@ func NewPersister[T any](cfg configs.PersistConfig, persistedStorage database.St
 	}
 }
 
-func (s *PersistedState[T]) Set(ctx context.Context, key string, value T, period time.Duration) error {
+func (s *PersistedState[T]) Set(ctx context.Context, key string, value T) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -39,17 +39,17 @@ func (s *PersistedState[T]) Set(ctx context.Context, key string, value T, period
 		s.value = s.value[1:]
 	}
 
-	if s.shouldPersist(period) {
+	if s.shouldPersist() {
 		valueBytes, err := sonic.Marshal(s.value)
 		if err != nil {
-			return err
+			return eris.Wrap(err, "marshal state")
 		}
 
 		if err = s.persistedStorage.SetState(ctx, db.SetStateParams{
 			Key:   key,
 			Value: valueBytes,
 		}); err != nil {
-			return eris.Wrap(err, "failed to persist state")
+			return eris.Wrap(err, "save state")
 		}
 		s.lastUpdated = time.Now()
 	}
@@ -57,12 +57,8 @@ func (s *PersistedState[T]) Set(ctx context.Context, key string, value T, period
 	return nil
 }
 
-func (s *PersistedState[T]) shouldPersist(period time.Duration) bool {
-	if s.value == nil {
-		return true
-	}
-
-	return time.Since(s.lastUpdated).Seconds() >= period.Seconds()
+func (s *PersistedState[T]) shouldPersist() bool {
+	return time.Since(s.lastUpdated).Seconds() >= s.cfg.Duration.Seconds()
 }
 
 func (s *PersistedState[T]) Get(ctx context.Context, key string) ([]T, error) {

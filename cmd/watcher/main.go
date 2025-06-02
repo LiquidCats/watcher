@@ -101,15 +101,15 @@ func main() {
 		blockTicker := runner.NewTicker(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
 		mempoolTicker := runner.NewTicker(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
 
-		// txIDHandler := usecase.NewTxIDHandler(chainConfig, rpcRepository, transactionsPublisher)
+		txIDHandler := usecase.NewTxIDHandler(chainConfig, rpcRepository, transactionsPublisher)
 		blockTransactionsHandler := usecase.NewBlockTransactionsHandler(chainConfig, rpcRepository, transactionsPublisher)
 
-		// txIDWorker := runner.NewWorker(
-		//	chainConfig.Key("txid"),
-		//	chainConfig.Workers.TxIDWorkerCount,
-		//	txIDChan,
-		//	txIDHandler,
-		//)
+		txIDWorker := runner.NewWorker(
+			chainConfig.Key("txid"),
+			chainConfig.Workers.TxIDWorkerCount,
+			txIDChan,
+			txIDHandler,
+		)
 		blockTransactionWorker := runner.NewWorker(
 			chainConfig.Key("block_transactions"),
 			chainConfig.Workers.BlockTransactionsWorkerCount,
@@ -123,7 +123,7 @@ func main() {
 			blockTicker.Run,
 			mempoolTicker.Run,
 			//
-			// txIDWorker.Run,
+			txIDWorker.Run,
 			blockTransactionWorker.Run,
 		)
 	}

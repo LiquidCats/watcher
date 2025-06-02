@@ -102,14 +102,13 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 			ctx,
 			uc.cfg.Key("blocks"),
 			b.GetHash(),
-			uc.cfg.Persist.Duration,
 		); err != nil {
 			logger.Error().Err(err).Msg("set state")
 		}
 
 		uc.workerCh <- b
 
-		logger.Debug().Any("block_hash", b.GetHash()).Msg("block processed")
+		logger.Info().Any("block_hash", b.GetHash()).Msg("block processed")
 	}
 
 	return nil

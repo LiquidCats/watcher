@@ -8,10 +8,10 @@ chains:
       block_transactions_worker_count: 5
     scan:
       depth: 32
-      interval: 30s
+      interval: 1s
     persist:
       capacity: 32
-      duration: 1h
+      duration: 30s
     topics:
       transactions: eth-transactions
       blocks: eth-blocks
@@ -27,10 +27,10 @@ chains:
       block_transactions_worker_count: 5
     scan:
       depth: 6
-      interval: 30s
+      interval: 10s
     persist:
-      bocks: 10
-      duration: 10s
+      capacity: 10
+      duration: 30s
     topics:
       transactions: btc-transactions
       blocks: btc-blocks

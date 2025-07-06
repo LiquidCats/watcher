@@ -7,6 +7,7 @@ import (
 	"github.com/LiquidCats/graceful"
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/bus/redis"
+	"github.com/LiquidCats/watcher/v2/internal/adapter/metrics/prometheus"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/adapter/runner"
@@ -73,11 +74,12 @@ func main() {
 
 	runners := []graceful.Runner{
 		graceful.Signals,
+		graceful.ServerRunner(prometheus.GinHandler(), cfg.Metrics),
 	}
 
 	for _, chainConfig := range cfg.Chains {
-		blockChan := make(chan entities.Block, BlocksChannelCap)
-		txIDChan := make(chan entities.TxID, TransactionChannelCap)
+		blockChan := make(chan entities.Block, chainConfig.Workers.BlockTransactionsWorkerCount)
+		txIDChan := make(chan entities.TxID, chainConfig.Workers.TxIDWorkerCount)
 
 		blocksState := state.NewPersister[entities.BlockHash](chainConfig.Persist, dbRepository)
 		blocksPublisher := redis.NewPublisher[entities.Block](redisClient)

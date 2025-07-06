@@ -17,12 +17,12 @@ func Load(prefix string) (Config, error) {
 
 	file, err := os.OpenFile(".app.cfg.yaml", os.O_RDONLY, 0677)
 	if err != nil {
-		return cfg, err
+		return Config{}, err
 	}
 
 	decoder := yaml.NewDecoder(file)
-	if err = decoder.Decode(&cfg); err != nil {
-		return cfg, err
+	if err = decoder.Decode(&cfg); err != nil { //nolint:musttag
+		return Config{}, err
 	}
 
 	return cfg, nil

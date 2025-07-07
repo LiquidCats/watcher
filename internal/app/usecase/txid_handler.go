@@ -6,9 +6,9 @@ import (
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/metrics"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
 	"github.com/rotisserie/eris"
-
 	"github.com/rs/zerolog"
 )
 
@@ -16,17 +16,24 @@ type TxIDHandler struct {
 	cfg       configs.ChainConfig
 	rpcClient rpc.Client
 	publisher bus.Publisher[entities.Transaction]
+	metrics   TxIDHandlerMetrics
+}
+
+type TxIDHandlerMetrics struct {
+	RequestToNodeCounter metrics.RequestToNodeCounter
 }
 
 func NewTxIDHandler(
 	cfg configs.ChainConfig,
 	rpcClient rpc.Client,
 	publisher bus.Publisher[entities.Transaction],
+	metrics TxIDHandlerMetrics,
 ) *TxIDHandler {
 	return &TxIDHandler{
 		cfg:       cfg,
 		rpcClient: rpcClient,
 		publisher: publisher,
+		metrics:   metrics,
 	}
 }
 
@@ -40,6 +47,7 @@ func (uc *TxIDHandler) Handle(ctx context.Context, txid entities.TxID) error {
 		Logger()
 
 	tx, err := uc.rpcClient.GetTransactionByTxID(ctx, txid)
+	uc.metrics.RequestToNodeCounter.Inc(uc.cfg.Chain)
 	if err != nil {
 		return eris.Wrap(err, "get transaction by txid")
 	}

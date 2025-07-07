@@ -42,11 +42,15 @@ func TestTxIDHandler_Handle(t *testing.T) {
 
 	rpc := mocks.NewMockClient(t)
 	publisher := mocks.NewMockPublisher[entities.Transaction](t)
+	requestToNodeCounter := mocks.NewMockRequestToNodeCounter(t)
 
 	rpc.On("GetTransactionByTxID", ctx, tx.TxID).Once().Return(tx, nil)
 	publisher.On("PublishTo", ctx, cfg.Topics.Transactions, tx).Once().Return(nil)
+	requestToNodeCounter.On("Inc", cfg.Chain).Once().Return(nil)
 
-	uc := usecase.NewTxIDHandler(cfg, rpc, publisher)
+	uc := usecase.NewTxIDHandler(cfg, rpc, publisher, usecase.TxIDHandlerMetrics{
+		RequestToNodeCounter: requestToNodeCounter,
+	})
 
 	err := uc.Handle(ctx, tx.TxID)
 	require.NoError(t, err)

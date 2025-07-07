@@ -2,6 +2,8 @@ x-app-env: &app-env
   GOMAXPROCS: 1
   WATCHER_APP_LOG_LEVEL: debug
 
+  WATCHER_METRICS_PORT: 9090
+
   WATCHER_DB_HOST: postgres
   WATCHER_DB_PORT: 5432
   WATCHER_DB_USER: watcher_db_user

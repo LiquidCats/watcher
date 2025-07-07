@@ -147,16 +147,8 @@ func main() { //nolint:funlen
 			blockTicker.Run,
 			mempoolTicker.Run,
 			//
-			func(ctx context.Context) error {
-				defer close(txIDChan)
-
-				return txIDWorker.Run(ctx)
-			},
-			func(ctx context.Context) error {
-				defer close(blockChan)
-
-				return blockTransactionWorker.Run(ctx)
-			},
+			txIDWorker.Run,
+			blockTransactionWorker.Run,
 		)
 	}
 

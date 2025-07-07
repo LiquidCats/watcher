@@ -25,7 +25,7 @@ import (
 
 const app = "watcher"
 
-func main() {
+func main() { //nolint:funlen
 	logger := zerolog.New(os.Stdout).
 		With().
 		Timestamp().

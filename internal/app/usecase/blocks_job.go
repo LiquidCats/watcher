@@ -7,6 +7,7 @@ import (
 	"github.com/LiquidCats/watcher/v2/configs"
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/metrics"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/runner"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
@@ -20,6 +21,11 @@ type BlocksJob struct {
 	rpcClient rpc.Client
 	workerCh  runner.ChanWrite[entities.Block]
 	publisher bus.Publisher[entities.Block]
+	metrics   BlocksJobMetrics
+}
+
+type BlocksJobMetrics struct {
+	RequestToNodeCounter metrics.RequestToNodeCounter
 }
 
 func NewBlocksJob(
@@ -28,6 +34,7 @@ func NewBlocksJob(
 	rpcClient rpc.Client,
 	workerCh runner.ChanWrite[entities.Block],
 	publisher bus.Publisher[entities.Block],
+	metrics BlocksJobMetrics,
 ) *BlocksJob {
 	return &BlocksJob{
 		cfg:       cfg,
@@ -35,6 +42,7 @@ func NewBlocksJob(
 		rpcClient: rpcClient,
 		workerCh:  workerCh,
 		publisher: publisher,
+		metrics:   metrics,
 	}
 }
 
@@ -56,6 +64,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 	}
 
 	blockHash, err = uc.rpcClient.GetLatestBlockHash(ctx)
+	uc.metrics.RequestToNodeCounter.Inc(uc.cfg.Chain)
 	if err != nil {
 		return eris.Wrap(err, "get latest block hash")
 	}
@@ -69,6 +78,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 
 	for {
 		block, err = uc.rpcClient.GetBlockByHash(ctx, blockHash, false)
+		uc.metrics.RequestToNodeCounter.Inc(uc.cfg.Chain)
 		if err != nil {
 			return eris.Wrapf(err, "get block [%s]", blockHash)
 		}

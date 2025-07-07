@@ -24,9 +24,14 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		},
 	}
 	client := mocks.NewMockClient(t)
+	requestToNodeCounter := mocks.NewMockRequestToNodeCounter(t)
+
+	requestToNodeCounter.On("Inc", cfg.Chain).Once().Return(nil)
 
 	testCh := make(chan entities.TxID, 2)
-	uc := usecase.NewMempoolJob(cfg, client, testCh, []entities.TxID{})
+	uc := usecase.NewMempoolJob(cfg, client, testCh, []entities.TxID{}, usecase.MempoolJobMetrics{
+		RequestToNodeCounter: requestToNodeCounter,
+	})
 
 	newMempool := []entities.TxID{"tx1", "tx3"}
 	client.

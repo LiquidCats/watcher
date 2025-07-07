@@ -34,6 +34,7 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 	state := mocks.NewMockState[entities.BlockHash](t)
 	client := mocks.NewMockClient(t)
 	publisher := mocks.NewMockPublisher[entities.Block](t)
+	requestToNodeCounter := mocks.NewMockRequestToNodeCounter(t)
 
 	block1 := &data.Block[*data.Transaction]{
 		Hash: "block1",
@@ -49,11 +50,14 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 	client.On("GetLatestBlockHash", mock.Anything).Once().Return(block2.Hash, nil)
 	client.On("GetBlockByHash", mock.Anything, block2.Hash, false).Once().Return(block2, nil)
 	publisher.On("PublishTo", mock.Anything, "blocks", block2).Once().Return(nil)
+	requestToNodeCounter.On("Inc", cfg.Chain).Twice().Return(nil)
 
 	testCh := make(chan entities.Block, 2)
 	defer close(testCh)
 
-	uc := usecase.NewBlocksJob(cfg, state, client, testCh, publisher)
+	uc := usecase.NewBlocksJob(cfg, state, client, testCh, publisher, usecase.BlocksJobMetrics{
+		RequestToNodeCounter: requestToNodeCounter,
+	})
 
 	err := uc.Handle(t.Context())
 	require.NoError(t, err)

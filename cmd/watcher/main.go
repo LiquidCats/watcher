@@ -24,10 +24,6 @@ import (
 )
 
 const app = "watcher"
-const (
-	TransactionChannelCap = 10000
-	BlocksChannelCap      = 128
-)
 
 func main() {
 	logger := zerolog.New(os.Stdout).
@@ -68,6 +64,8 @@ func main() {
 		logger.Fatal().Stack().Err(err).Msg("migrate")
 	}
 
+	requestsToNodeMetric := prometheus.NewRequestsToNodeCount(app)
+
 	redisClient := redis2.NewClient(cfg.Redis.ToConfig(app))
 
 	dbRepository := database.New(pool)
@@ -86,6 +84,7 @@ func main() {
 		transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
 
 		rpcRepository, chainErr := rpc.Factory(chainConfig)
+
 		if chainErr != nil {
 			logger.Fatal().Any("err", eris.ToString(err, true)).Msg("rpc adapter")
 			return
@@ -97,14 +96,37 @@ func main() {
 			return
 		}
 
-		blocksJob := usecase.NewBlocksJob(chainConfig, blocksState, rpcRepository, blockChan, blocksPublisher)
-		mempoolJob := usecase.NewMempoolJob(chainConfig, rpcRepository, txIDChan, oldMempool)
+		blocksJob := usecase.NewBlocksJob(
+			chainConfig,
+			blocksState,
+			rpcRepository,
+			blockChan,
+			blocksPublisher,
+			usecase.BlocksJobMetrics{RequestToNodeCounter: requestsToNodeMetric},
+		)
+		mempoolJob := usecase.NewMempoolJob(
+			chainConfig,
+			rpcRepository,
+			txIDChan,
+			oldMempool,
+			usecase.MempoolJobMetrics{RequestToNodeCounter: requestsToNodeMetric},
+		)
 
 		blockTicker := runner.NewTicker(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
 		mempoolTicker := runner.NewTicker(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
 
-		txIDHandler := usecase.NewTxIDHandler(chainConfig, rpcRepository, transactionsPublisher)
-		blockTransactionsHandler := usecase.NewBlockTransactionsHandler(chainConfig, rpcRepository, transactionsPublisher)
+		txIDHandler := usecase.NewTxIDHandler(
+			chainConfig,
+			rpcRepository,
+			transactionsPublisher,
+			usecase.TxIDHandlerMetrics{RequestToNodeCounter: requestsToNodeMetric},
+		)
+		blockTransactionsHandler := usecase.NewBlockTransactionsHandler(
+			chainConfig,
+			rpcRepository,
+			transactionsPublisher,
+			usecase.BlockTransactionsHandlerMetrics{RequestToNodeCounter: requestsToNodeMetric},
+		)
 
 		txIDWorker := runner.NewWorker(
 			chainConfig.Key("txid"),
@@ -125,8 +147,16 @@ func main() {
 			blockTicker.Run,
 			mempoolTicker.Run,
 			//
-			txIDWorker.Run,
-			blockTransactionWorker.Run,
+			func(ctx context.Context) error {
+				defer close(txIDChan)
+
+				return txIDWorker.Run(ctx)
+			},
+			func(ctx context.Context) error {
+				defer close(blockChan)
+
+				return blockTransactionWorker.Run(ctx)
+			},
 		)
 	}
 

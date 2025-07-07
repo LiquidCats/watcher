@@ -28,6 +28,9 @@ func TestTransactionHandler_Handle(t *testing.T) {
 		Tx:   []*data.Transaction{tx},
 	}
 	cfg := configs.ChainConfig{
+		Driver: entities.DriverRPC,
+		Type:   entities.TypeUtxo,
+		Chain:  "bitcoin",
 		Topics: configs.TopicsConfig{
 			Transactions: "test-transactions",
 		},
@@ -35,11 +38,15 @@ func TestTransactionHandler_Handle(t *testing.T) {
 
 	pub := mocks.NewMockPublisher[entities.Transaction](t)
 	rpc := mocks.NewMockClient(t)
+	requestToNodeCounter := mocks.NewMockRequestToNodeCounter(t)
 
 	rpc.On("GetBlockByHash", mock.Anything, block.GetHash(), true).Once().Return(block, nil)
 	pub.On("PublishTo", mock.Anything, cfg.Topics.Transactions, tx).Once().Return(nil)
+	requestToNodeCounter.On("Inc", cfg.Chain).Once().Return(nil)
 
-	uc := usecase.NewBlockTransactionsHandler(cfg, rpc, pub)
+	uc := usecase.NewBlockTransactionsHandler(cfg, rpc, pub, usecase.BlockTransactionsHandlerMetrics{
+		RequestToNodeCounter: requestToNodeCounter,
+	})
 
 	err := uc.Handle(ctx, block)
 	require.NoError(t, err)

@@ -9,17 +9,17 @@ import (
 )
 
 type Publisher[T any] struct {
-	client *redis.Client
+	client redis.UniversalClient
 }
 
-func NewPublisher[T any](client *redis.Client) *Publisher[T] {
+func NewPublisher[T any](client redis.UniversalClient) *Publisher[T] {
 	return &Publisher[T]{
 		client: client,
 	}
 }
 
 func (p *Publisher[T]) pub(ctx context.Context, channel string, data any) error {
-	dataBytes, err := sonic.ConfigDefault.Marshal(data)
+	dataBytes, err := sonic.ConfigFastest.Marshal(data)
 	if err != nil {
 		return eris.Wrap(err, "marshal data")
 	}

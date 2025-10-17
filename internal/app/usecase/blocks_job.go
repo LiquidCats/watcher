@@ -58,11 +58,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 		Any("chain", uc.cfg.Chain).
 		Logger()
 
-	blocksState, err := uc.state.Get(ctx, uc.cfg.Key("blocks"))
-	if err != nil {
-		return eris.Wrap(err, "get state")
-	}
-
+	blocksState := uc.state.Get()
 	blockHash, err = uc.rpcClient.GetLatestBlockHash(ctx)
 	uc.metrics.RequestToNodeCounter.Inc(uc.cfg.Chain)
 	if err != nil {
@@ -108,13 +104,7 @@ func (uc *BlocksJob) Handle(ctx context.Context) error {
 			return eris.Wrap(err, "publish block")
 		}
 
-		if err = uc.state.Set(
-			ctx,
-			uc.cfg.Key("blocks"),
-			b.GetHash(),
-		); err != nil {
-			logger.Error().Err(err).Msg("set state")
-		}
+		uc.state.Set(b.GetHash())
 
 		uc.workerCh <- b
 

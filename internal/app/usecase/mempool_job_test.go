@@ -20,7 +20,7 @@ func TestWatchMempoolUseCase_Execute(t *testing.T) {
 		Chain:  "bitcoin",
 
 		Persist: configs.PersistConfig{
-			Duration: time.Hour,
+			Interval: time.Hour,
 		},
 	}
 	client := mocks.NewMockClient(t)

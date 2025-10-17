@@ -24,7 +24,7 @@ func TestTxIDHandler_Handle(t *testing.T) {
 		},
 		Persist: configs.PersistConfig{
 			Capacity: 6,
-			Duration: time.Hour,
+			Interval: time.Hour,
 		},
 		Topics: configs.TopicsConfig{
 			Transactions: "test-transactions",

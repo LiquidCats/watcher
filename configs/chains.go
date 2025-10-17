@@ -40,7 +40,7 @@ type ScanConfig struct {
 
 type PersistConfig struct {
 	Capacity int           `yaml:"capacity"`
-	Duration time.Duration `yaml:"duration"`
+	Interval time.Duration `yaml:"interval"`
 }
 
 type WorkersConfig struct {

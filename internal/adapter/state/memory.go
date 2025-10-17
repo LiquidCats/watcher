@@ -25,7 +25,7 @@ func NewMemoryState[T any](cfg configs.PersistConfig) *PersistedState[T] {
 func (s *PersistedState[T]) Set(value T) {
 	for {
 		// Read current value
-		oldValPtr := s.value.Load().(*[]T)
+		oldValPtr := s.value.Load().(*[]T) //nolint:errcheck
 		oldVal := *oldValPtr
 
 		// Create a new slice with the added value
@@ -47,7 +47,7 @@ func (s *PersistedState[T]) Set(value T) {
 }
 
 func (s *PersistedState[T]) Get() []T {
-	valPtr := s.value.Load().(*[]T)
+	valPtr := s.value.Load().(*[]T) //nolint:errcheck
 	val := *valPtr
 
 	if len(val) != 0 {

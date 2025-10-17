@@ -10,7 +10,6 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/usecase"
 	"github.com/LiquidCats/watcher/v2/test/mocks"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +23,7 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		},
 		Persist: configs.PersistConfig{
 			Capacity: 6,
-			Duration: time.Hour,
+			Interval: time.Hour,
 		},
 		Topics: configs.TopicsConfig{
 			Blocks: "blocks",
@@ -45,11 +44,11 @@ func TestWatchBlocksUseCase_Execute(t *testing.T) {
 		PreviousBlockHash: "block1",
 	}
 
-	state.On("Get", mock.Anything, "utxo.rpc.bitcoin.blocks").Once().Return([]entities.BlockHash{block1.Hash}, nil)
-	state.On("Set", mock.Anything, "utxo.rpc.bitcoin.blocks", block2.Hash).Once().Return(nil, nil)
-	client.On("GetLatestBlockHash", mock.Anything).Once().Return(block2.Hash, nil)
-	client.On("GetBlockByHash", mock.Anything, block2.Hash, false).Once().Return(block2, nil)
-	publisher.On("PublishTo", mock.Anything, "blocks", block2).Once().Return(nil)
+	state.On("Get").Once().Return([]entities.BlockHash{block1.Hash})
+	state.On("Set", block2.Hash).Once().Return()
+	client.On("GetLatestBlockHash", t.Context()).Once().Return(block2.Hash, nil)
+	client.On("GetBlockByHash", t.Context(), block2.Hash, false).Once().Return(block2, nil)
+	publisher.On("PublishTo", t.Context(), "blocks", block2).Once().Return(nil)
 	requestToNodeCounter.On("Inc", cfg.Chain).Twice().Return(nil)
 
 	testCh := make(chan entities.Block, 2)

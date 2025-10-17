@@ -5,8 +5,6 @@
 package mocks
 
 import (
-	"context"
-
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -38,31 +36,22 @@ func (_m *MockState[T]) EXPECT() *MockState_Expecter[T] {
 }
 
 // Get provides a mock function for the type MockState
-func (_mock *MockState[T]) Get(ctx context.Context, key string) ([]T, error) {
-	ret := _mock.Called(ctx, key)
+func (_mock *MockState[T]) Get() []T {
+	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
 	var r0 []T
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]T, error)); ok {
-		return returnFunc(ctx, key)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []T); ok {
-		r0 = returnFunc(ctx, key)
+	if returnFunc, ok := ret.Get(0).(func() []T); ok {
+		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]T)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, key)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
+	return r0
 }
 
 // MockState_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
@@ -71,44 +60,31 @@ type MockState_Get_Call[T any] struct {
 }
 
 // Get is a helper method to define mock.On call
-//   - ctx
-//   - key
-func (_e *MockState_Expecter[T]) Get(ctx interface{}, key interface{}) *MockState_Get_Call[T] {
-	return &MockState_Get_Call[T]{Call: _e.mock.On("Get", ctx, key)}
+func (_e *MockState_Expecter[T]) Get() *MockState_Get_Call[T] {
+	return &MockState_Get_Call[T]{Call: _e.mock.On("Get")}
 }
 
-func (_c *MockState_Get_Call[T]) Run(run func(ctx context.Context, key string)) *MockState_Get_Call[T] {
+func (_c *MockState_Get_Call[T]) Run(run func()) *MockState_Get_Call[T] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run()
 	})
 	return _c
 }
 
-func (_c *MockState_Get_Call[T]) Return(vs []T, err error) *MockState_Get_Call[T] {
-	_c.Call.Return(vs, err)
+func (_c *MockState_Get_Call[T]) Return(vs []T) *MockState_Get_Call[T] {
+	_c.Call.Return(vs)
 	return _c
 }
 
-func (_c *MockState_Get_Call[T]) RunAndReturn(run func(ctx context.Context, key string) ([]T, error)) *MockState_Get_Call[T] {
+func (_c *MockState_Get_Call[T]) RunAndReturn(run func() []T) *MockState_Get_Call[T] {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Set provides a mock function for the type MockState
-func (_mock *MockState[T]) Set(ctx context.Context, key string, value T) error {
-	ret := _mock.Called(ctx, key, value)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Set")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, T) error); ok {
-		r0 = returnFunc(ctx, key, value)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
+func (_mock *MockState[T]) Set(value T) {
+	_mock.Called(value)
+	return
 }
 
 // MockState_Set_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Set'
@@ -117,26 +93,24 @@ type MockState_Set_Call[T any] struct {
 }
 
 // Set is a helper method to define mock.On call
-//   - ctx
-//   - key
 //   - value
-func (_e *MockState_Expecter[T]) Set(ctx interface{}, key interface{}, value interface{}) *MockState_Set_Call[T] {
-	return &MockState_Set_Call[T]{Call: _e.mock.On("Set", ctx, key, value)}
+func (_e *MockState_Expecter[T]) Set(value interface{}) *MockState_Set_Call[T] {
+	return &MockState_Set_Call[T]{Call: _e.mock.On("Set", value)}
 }
 
-func (_c *MockState_Set_Call[T]) Run(run func(ctx context.Context, key string, value T)) *MockState_Set_Call[T] {
+func (_c *MockState_Set_Call[T]) Run(run func(value T)) *MockState_Set_Call[T] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(T))
+		run(args[0].(T))
 	})
 	return _c
 }
 
-func (_c *MockState_Set_Call[T]) Return(err error) *MockState_Set_Call[T] {
-	_c.Call.Return(err)
+func (_c *MockState_Set_Call[T]) Return() *MockState_Set_Call[T] {
+	_c.Call.Return()
 	return _c
 }
 
-func (_c *MockState_Set_Call[T]) RunAndReturn(run func(ctx context.Context, key string, value T) error) *MockState_Set_Call[T] {
-	_c.Call.Return(run)
+func (_c *MockState_Set_Call[T]) RunAndReturn(run func(value T)) *MockState_Set_Call[T] {
+	_c.Run(run)
 	return _c
 }

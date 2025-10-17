@@ -79,7 +79,7 @@ func main() { //nolint:funlen
 		blockChan := make(chan entities.Block, chainConfig.Workers.BlockTransactionsWorkerCount)
 		txIDChan := make(chan entities.TxID, chainConfig.Workers.TxIDWorkerCount)
 
-		blocksState := state.NewPersister[entities.BlockHash](chainConfig.Persist, dbRepository)
+		blocksState := state.NewMemoryState[entities.BlockHash](chainConfig.Persist)
 		blocksPublisher := redis.NewPublisher[entities.Block](redisClient)
 		transactionsPublisher := redis.NewPublisher[entities.Transaction](redisClient)
 
@@ -111,9 +111,15 @@ func main() { //nolint:funlen
 			oldMempool,
 			usecase.MempoolJobMetrics{RequestToNodeCounter: requestsToNodeMetric},
 		)
+		statePersisterJob := usecase.NewBlocksPersisterJob(
+			chainConfig,
+			dbRepository,
+			blocksState,
+		)
 
 		blockTicker := runner.NewTicker(chainConfig.Key("blocks"), chainConfig.Scan.Interval, blocksJob)
 		mempoolTicker := runner.NewTicker(chainConfig.Key("mempool"), chainConfig.Scan.Interval, mempoolJob)
+		statePersisterTicker := runner.NewTicker(chainConfig.Key("persister"), chainConfig.Scan.Interval, statePersisterJob)
 
 		txIDHandler := usecase.NewTxIDHandler(
 			chainConfig,
@@ -128,13 +134,13 @@ func main() { //nolint:funlen
 			usecase.BlockTransactionsHandlerMetrics{RequestToNodeCounter: requestsToNodeMetric},
 		)
 
-		txIDWorker := runner.NewWorker(
+		txIDWorker := runner.NewWorker[entities.TxID](
 			chainConfig.Key("txid"),
 			chainConfig.Workers.TxIDWorkerCount,
 			txIDChan,
 			txIDHandler,
 		)
-		blockTransactionWorker := runner.NewWorker(
+		blockTransactionWorker := runner.NewWorker[entities.Block](
 			chainConfig.Key("block_transactions"),
 			chainConfig.Workers.BlockTransactionsWorkerCount,
 			blockChan,
@@ -146,6 +152,7 @@ func main() { //nolint:funlen
 			//
 			blockTicker.Run,
 			mempoolTicker.Run,
+			statePersisterTicker.Run,
 			//
 			txIDWorker.Run,
 			blockTransactionWorker.Run,

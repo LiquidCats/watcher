@@ -30,6 +30,9 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v5
 
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+
     - name: Lowercase Repository Name
       id: repository
       uses: Entepotenz/change-string-case-action-min-dependencies@v1

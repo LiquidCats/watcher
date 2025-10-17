@@ -2,8 +2,6 @@ package configs
 
 import (
 	"fmt"
-
-	"github.com/LiquidCats/watcher/v2/pkg/docker"
 )
 
 type DB struct {
@@ -16,13 +14,11 @@ type DB struct {
 }
 
 func (d *DB) ToDSN() string {
-	pwd, _ := docker.GetSecret(d.Password)
-
 	return fmt.Sprintf(
 		"%s://%s:%s@%s:%s/%s?sslmode=disable",
 		d.Driver,
 		d.User,
-		pwd,
+		d.Password,
 		d.Host,
 		d.Port,
 		d.Database,

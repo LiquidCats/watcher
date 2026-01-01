@@ -6,9 +6,14 @@ type (
 	RawBlock    string
 )
 
-type Block interface {
-	GetHeight() BlockHeight
-	GetHash() BlockHash
-	GetPrevHash() BlockHash
-	GetTransactions() []Transaction
+type Block struct {
+	Height       BlockHeight
+	Hash         BlockHash
+	Transactions []TxID
+}
+
+type BlockWithTransactions[TxIn any] struct {
+	Height       BlockHeight
+	Hash         BlockHash
+	Transactions []Transaction[TxIn]
 }

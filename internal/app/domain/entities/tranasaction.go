@@ -1,11 +1,31 @@
 package entities
 
+import "github.com/shopspring/decimal"
+
 type (
 	TxID           string
 	RawTransaction string
 )
 
-type Transaction interface {
-	GetTxID() TxID
-	GetBlockHash() BlockHash
+type Transaction[In any] struct {
+	TxID    TxID
+	Inputs  []In
+	Outputs []TransactionOutput
+	Fee     decimal.Decimal
+}
+
+type TransactionUtxoInput struct {
+	TxID TxID
+	N    uint32
+}
+
+type TransactionAccountInput struct {
+	Address Address
+}
+
+type TransactionOutput struct {
+	Ticker  Ticker
+	Value   decimal.Decimal
+	Address Address
+	N       uint32
 }

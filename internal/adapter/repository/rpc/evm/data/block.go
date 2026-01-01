@@ -47,33 +47,3 @@ type Block[T any] struct {
 type LatestBlock struct {
 	Hash entities.BlockHash `json:"hash"`
 }
-
-func (b *Block[T]) GetHeight() entities.BlockHeight {
-	return entities.BlockHeight(b.Number.Uint64())
-}
-
-func (b *Block[T]) GetHash() entities.BlockHash {
-	return b.Hash
-}
-
-func (b *Block[T]) GetPrevHash() entities.BlockHash {
-	return b.ParentHash
-}
-
-func (b *Block[T]) GetTransactions() []entities.Transaction {
-	if len(b.Transactions) == 0 {
-		return nil
-	}
-
-	txs := make([]entities.Transaction, len(b.Transactions))
-
-	for i, tx := range b.Transactions {
-		transac, ok := any(tx).(*Transaction)
-		if !ok {
-			continue
-		}
-		txs[i] = transac
-	}
-
-	return txs
-}

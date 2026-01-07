@@ -23,4 +23,3 @@ func (t Type) Equals(typ Type) bool {
 }
 
 type Chain string
-type Ticker string

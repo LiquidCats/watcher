@@ -7,11 +7,14 @@ type (
 	RawTransaction string
 )
 
+type TxIDs []TxID
+
 type Transaction[In any] struct {
-	TxID    TxID
-	Inputs  []In
-	Outputs []TransactionOutput
-	Fee     decimal.Decimal
+	TxID      TxID
+	BlockHash BlockHash
+	Inputs    []In
+	Outputs   []TransactionOutput
+	Fee       decimal.Decimal
 }
 
 type TransactionUtxoInput struct {
@@ -24,8 +27,9 @@ type TransactionAccountInput struct {
 }
 
 type TransactionOutput struct {
-	Ticker  Ticker
-	Value   decimal.Decimal
-	Address Address
-	N       uint32
+	N        uint32
+	Value    decimal.Decimal
+	Ticker   Ticker
+	Contract Address
+	Address  Address
 }

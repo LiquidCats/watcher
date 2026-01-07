@@ -6,14 +6,18 @@ type (
 	RawBlock    string
 )
 
+type BlockHeader struct {
+	Height   BlockHeight
+	Hash     BlockHash
+	PrevHash BlockHash
+}
+
 type Block struct {
-	Height       BlockHeight
-	Hash         BlockHash
+	BlockHeader
 	Transactions []TxID
 }
 
 type BlockWithTransactions[TxIn any] struct {
-	Height       BlockHeight
-	Hash         BlockHash
+	BlockHeader
 	Transactions []Transaction[TxIn]
 }

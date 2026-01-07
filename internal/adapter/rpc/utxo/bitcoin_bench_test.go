@@ -1,0 +1,119 @@
+package utxo_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/LiquidCats/watcher/v2/configs"
+	"github.com/LiquidCats/watcher/v2/internal/adapter/rpc/utxo"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
+	"github.com/LiquidCats/watcher/v2/test/fixtures"
+	"github.com/LiquidCats/watcher/v2/test/server"
+)
+
+func BenchmarkClient_GetMempool(b *testing.B) {
+	srv := server.NewJSONRPCServer(&testing.T{},
+		server.RPCMocker{
+			Method: "getrawmempool",
+			Result: fixtures.BTCMempool,
+		},
+	)
+	defer srv.Close()
+
+	cfg := configs.RPCConfig{NodeURL: srv.URL}
+	c := utxo.NewClient(cfg, testTicker)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = c.GetMempool(ctx)
+	}
+}
+
+func BenchmarkClient_GetBlockByHash(b *testing.B) {
+	srv := server.NewJSONRPCServer(&testing.T{},
+		server.RPCMocker{
+			Method: "getblock",
+			Result: fixtures.BTCBlockWithoutTransactions,
+		},
+	)
+	defer srv.Close()
+
+	cfg := configs.RPCConfig{NodeURL: srv.URL}
+	c := utxo.NewClient(cfg, testTicker)
+	ctx := context.Background()
+	hash := entities.BlockHash(fixtures.BTCBlockHash)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = c.GetBlockByHash(ctx, hash)
+	}
+}
+
+func BenchmarkClient_GetBlockByHashWithTransactions(b *testing.B) {
+	srv := server.NewJSONRPCServer(&testing.T{},
+		server.RPCMocker{
+			Method: "getblock",
+			Result: fixtures.BTCBlockWithTransactions,
+		},
+	)
+	defer srv.Close()
+
+	cfg := configs.RPCConfig{NodeURL: srv.URL}
+	c := utxo.NewClient(cfg, testTicker)
+	ctx := context.Background()
+	hash := entities.BlockHash(fixtures.BTCBlockHash)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = c.GetBlockByHashWithTransactions(ctx, hash)
+	}
+}
+
+func BenchmarkClient_GetTransactionByTxID(b *testing.B) {
+	srv := server.NewJSONRPCServer(&testing.T{},
+		server.RPCMocker{
+			Method: "getrawtransaction",
+			Result: fixtures.BTCTransaction,
+		},
+	)
+	defer srv.Close()
+
+	cfg := configs.RPCConfig{NodeURL: srv.URL}
+	c := utxo.NewClient(cfg, testTicker)
+	ctx := context.Background()
+	txID := entities.TxID(fixtures.BTCTxID)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = c.GetTransactionByTxID(ctx, txID)
+	}
+}
+
+func BenchmarkClient_GetLatestBlock(b *testing.B) {
+	srv := server.NewJSONRPCServer(&testing.T{},
+		server.RPCMocker{
+			Method: "getbestblockhash",
+			Result: `{"jsonrpc":"2.0","id":"1","result":"` + fixtures.BTCBlockHash + `"}`,
+		},
+		server.RPCMocker{
+			Method: "getblock",
+			Result: fixtures.BTCBlockWithoutTransactions,
+		},
+	)
+	defer srv.Close()
+
+	cfg := configs.RPCConfig{NodeURL: srv.URL}
+	c := utxo.NewClient(cfg, testTicker)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = c.GetLatestBlock(ctx)
+	}
+}

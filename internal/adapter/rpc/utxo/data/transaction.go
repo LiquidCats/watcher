@@ -14,16 +14,8 @@ type Transaction struct {
 	BlockHash     entities.BlockHash `json:"blockhash,omitempty"`
 }
 
-func (t *Transaction) GetTxID() entities.TxID {
-	return t.TxID
-}
-
-func (t *Transaction) GetBlockHash() entities.BlockHash {
-	return t.BlockHash
-}
-
 type TransactionVin struct {
-	Txid        entities.TxID           `json:"txid"`
+	TxID        entities.TxID           `json:"txid"`
 	Vout        uint32                  `json:"vout"`
 	ScriptSig   TransactionVinScriptSig `json:"scriptSig"`
 	TxInWitness []string                `json:"txinwitness"`

@@ -7,9 +7,12 @@ import (
 )
 
 type Client[TxIn any] interface {
-	GetLatestBlockHash(ctx context.Context) (entities.BlockHash, error)
+	GetLatestBlock(ctx context.Context) (*entities.Block, error)
 	GetBlockByHash(ctx context.Context, hash entities.BlockHash) (*entities.Block, error)
-	GetBlockByHashWithTransactions(ctx context.Context, hash entities.BlockHash) (*entities.BlockWithTransactions[TxIn], error)
+	GetBlockByHashWithTransactions(
+		ctx context.Context,
+		hash entities.BlockHash,
+	) (*entities.BlockWithTransactions[TxIn], error)
 	GetTransactionByTxID(ctx context.Context, hash entities.TxID) (*entities.Transaction[TxIn], error)
 	GetMempool(ctx context.Context) ([]entities.TxID, error)
 }

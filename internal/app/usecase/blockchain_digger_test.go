@@ -81,7 +81,7 @@ func (s *BlockchainDiggerSuite) SetupTest() {
 	s.mockMetrics = mocks.NewMockRequestToNodeCounter(s.T())
 }
 
-func (s *BlockchainDiggerSuite) newDigger() *usecase.BlockchainDigger {
+func (s *BlockchainDiggerSuite) newDigger() *usecase.BlockchainDigger[any] {
 	return usecase.NewBlockchainDigger(
 		s.cfg,
 		s.mockBlockState,

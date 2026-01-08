@@ -44,7 +44,7 @@ func (s *BlocksPersisterSuite) SetupTest() {
 }
 
 func (s *BlocksPersisterSuite) newPersister() *usecase.BlocksPersister {
-	return usecase.NewBlocksPersisterJob(s.cfg, s.mockDB, s.mockState)
+	return usecase.NewBlocksPersister(s.cfg, s.mockDB, s.mockState)
 }
 
 func (s *BlocksPersisterSuite) TestSuccessfulPersistence() {

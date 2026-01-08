@@ -14,11 +14,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type BlockchainDigger struct {
+type BlockchainDigger[TxIn any] struct {
 	cfg           configs.ChainConfig
 	blockState    state.SliceState[entities.BlockHash]
 	inflightState state.MapState[entities.BlockHash, bool]
-	rpcClient     rpc.Client[any]
+	rpcClient     rpc.Client[TxIn]
 	workerCh      runner.ChanWrite[*entities.Block]
 	metrics       BlocksJobMetrics
 }
@@ -27,15 +27,15 @@ type BlocksJobMetrics struct {
 	RequestToNodeCounter metrics.RequestToNodeCounter
 }
 
-func NewBlockchainDigger(
+func NewBlockchainDigger[TxIn any](
 	cfg configs.ChainConfig,
 	blockState state.SliceState[entities.BlockHash],
 	inflightState state.MapState[entities.BlockHash, bool],
-	rpcClient rpc.Client[any],
+	rpcClient rpc.Client[TxIn],
 	workerCh runner.ChanWrite[*entities.Block],
 	metrics BlocksJobMetrics,
-) *BlockchainDigger {
-	return &BlockchainDigger{
+) *BlockchainDigger[TxIn] {
+	return &BlockchainDigger[TxIn]{
 		cfg:           cfg,
 		blockState:    blockState,
 		inflightState: inflightState,
@@ -45,7 +45,7 @@ func NewBlockchainDigger(
 	}
 }
 
-func (uc *BlockchainDigger) Handle(ctx context.Context) error {
+func (uc *BlockchainDigger[TxIn]) Handle(ctx context.Context) error {
 	var block *entities.Block
 	var err error
 	var blocks []*entities.Block

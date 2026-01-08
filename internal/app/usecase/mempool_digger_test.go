@@ -38,7 +38,7 @@ func (s *MempoolDiggerSuite) SetupTest() {
 	s.requestToNodeCounter = mocks.NewMockRequestToNodeCounter(s.T())
 }
 
-func (s *MempoolDiggerSuite) newDigger(txCh chan entities.TxID, oldMempool []entities.TxID) *usecase.MempoolDigger {
+func (s *MempoolDiggerSuite) newDigger(txCh chan entities.TxID, oldMempool []entities.TxID) *usecase.MempoolDigger[any] {
 	return usecase.NewMempoolDigger(
 		s.cfg,
 		s.client,

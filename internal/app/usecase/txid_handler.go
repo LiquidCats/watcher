@@ -12,10 +12,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type TxIDHandler struct {
+type TxIDHandler[TxIn any] struct {
 	cfg       configs.ChainConfig
-	rpcClient rpc.Client[any]
-	publisher bus.Publisher[entities.Transaction[any]]
+	rpcClient rpc.Client[TxIn]
+	publisher bus.Publisher[entities.Transaction[TxIn]]
 	metrics   TxIDHandlerMetrics
 }
 
@@ -23,13 +23,13 @@ type TxIDHandlerMetrics struct {
 	RequestToNodeCounter metrics.RequestToNodeCounter
 }
 
-func NewTxIDHandler(
+func NewTxIDHandler[TxIn any](
 	cfg configs.ChainConfig,
-	rpcClient rpc.Client[any],
-	publisher bus.Publisher[entities.Transaction[any]],
+	rpcClient rpc.Client[TxIn],
+	publisher bus.Publisher[entities.Transaction[TxIn]],
 	metrics TxIDHandlerMetrics,
-) *TxIDHandler {
-	return &TxIDHandler{
+) *TxIDHandler[TxIn] {
+	return &TxIDHandler[TxIn]{
 		cfg:       cfg,
 		rpcClient: rpcClient,
 		publisher: publisher,
@@ -37,7 +37,7 @@ func NewTxIDHandler(
 	}
 }
 
-func (uc *TxIDHandler) Handle(ctx context.Context, txid entities.TxID) error {
+func (uc *TxIDHandler[TxIn]) Handle(ctx context.Context, txid entities.TxID) error {
 	logger := zerolog.Ctx(ctx).With().
 		Str("name", "txid_handler").
 		Any("driver", uc.cfg.Driver).

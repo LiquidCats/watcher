@@ -16,7 +16,7 @@ type BlocksPersister struct {
 	state state.SliceState[entities.BlockHash]
 }
 
-func NewBlocksPersisterJob(
+func NewBlocksPersister(
 	cfg configs.ChainConfig,
 	db database.StateDB,
 	state state.SliceState[entities.BlockHash],

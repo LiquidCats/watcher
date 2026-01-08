@@ -48,7 +48,7 @@ func (s *TxIDHandlerSuite) SetupTest() {
 	s.requestToNodeCounter = mocks.NewMockRequestToNodeCounter(s.T())
 }
 
-func (s *TxIDHandlerSuite) newHandler() *usecase.TxIDHandler {
+func (s *TxIDHandlerSuite) newHandler() *usecase.TxIDHandler[any] {
 	return usecase.NewTxIDHandler(
 		s.cfg,
 		s.client,

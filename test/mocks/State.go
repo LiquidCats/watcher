@@ -93,14 +93,20 @@ type MockState_Set_Call[T any] struct {
 }
 
 // Set is a helper method to define mock.On call
-//   - value
+//   - value T
 func (_e *MockState_Expecter[T]) Set(value interface{}) *MockState_Set_Call[T] {
 	return &MockState_Set_Call[T]{Call: _e.mock.On("Set", value)}
 }
 
 func (_c *MockState_Set_Call[T]) Run(run func(value T)) *MockState_Set_Call[T] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(T))
+		var arg0 T
+		if args[0] != nil {
+			arg0 = args[0].(T)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }

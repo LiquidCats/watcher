@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/LiquidCats/watcher/v2/internal/adapter/repository/database"
+	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -38,103 +38,65 @@ func (_m *MockStateDB) EXPECT() *MockStateDB_Expecter {
 	return &MockStateDB_Expecter{mock: &_m.Mock}
 }
 
-// GetStateByKey provides a mock function for the type MockStateDB
-func (_mock *MockStateDB) GetStateByKey(ctx context.Context, key string) (database.State, error) {
-	ret := _mock.Called(ctx, key)
+// SetBlockState provides a mock function for the type MockStateDB
+func (_mock *MockStateDB) SetBlockState(ctx context.Context, chain entities.Chain, blocks []entities.BlockHash) error {
+	ret := _mock.Called(ctx, chain, blocks)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetStateByKey")
-	}
-
-	var r0 database.State
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (database.State, error)); ok {
-		return returnFunc(ctx, key)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) database.State); ok {
-		r0 = returnFunc(ctx, key)
-	} else {
-		r0 = ret.Get(0).(database.State)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, key)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockStateDB_GetStateByKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetStateByKey'
-type MockStateDB_GetStateByKey_Call struct {
-	*mock.Call
-}
-
-// GetStateByKey is a helper method to define mock.On call
-//   - ctx
-//   - key
-func (_e *MockStateDB_Expecter) GetStateByKey(ctx interface{}, key interface{}) *MockStateDB_GetStateByKey_Call {
-	return &MockStateDB_GetStateByKey_Call{Call: _e.mock.On("GetStateByKey", ctx, key)}
-}
-
-func (_c *MockStateDB_GetStateByKey_Call) Run(run func(ctx context.Context, key string)) *MockStateDB_GetStateByKey_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
-	})
-	return _c
-}
-
-func (_c *MockStateDB_GetStateByKey_Call) Return(state database.State, err error) *MockStateDB_GetStateByKey_Call {
-	_c.Call.Return(state, err)
-	return _c
-}
-
-func (_c *MockStateDB_GetStateByKey_Call) RunAndReturn(run func(ctx context.Context, key string) (database.State, error)) *MockStateDB_GetStateByKey_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// SetState provides a mock function for the type MockStateDB
-func (_mock *MockStateDB) SetState(ctx context.Context, arg database.SetStateParams) error {
-	ret := _mock.Called(ctx, arg)
-
-	if len(ret) == 0 {
-		panic("no return value specified for SetState")
+		panic("no return value specified for SetBlockState")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, database.SetStateParams) error); ok {
-		r0 = returnFunc(ctx, arg)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, entities.Chain, []entities.BlockHash) error); ok {
+		r0 = returnFunc(ctx, chain, blocks)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// MockStateDB_SetState_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetState'
-type MockStateDB_SetState_Call struct {
+// MockStateDB_SetBlockState_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetBlockState'
+type MockStateDB_SetBlockState_Call struct {
 	*mock.Call
 }
 
-// SetState is a helper method to define mock.On call
-//   - ctx
-//   - arg
-func (_e *MockStateDB_Expecter) SetState(ctx interface{}, arg interface{}) *MockStateDB_SetState_Call {
-	return &MockStateDB_SetState_Call{Call: _e.mock.On("SetState", ctx, arg)}
+// SetBlockState is a helper method to define mock.On call
+//   - ctx context.Context
+//   - chain entities.Chain
+//   - blocks []entities.BlockHash
+func (_e *MockStateDB_Expecter) SetBlockState(ctx interface{}, chain interface{}, blocks interface{}) *MockStateDB_SetBlockState_Call {
+	return &MockStateDB_SetBlockState_Call{Call: _e.mock.On("SetBlockState", ctx, chain, blocks)}
 }
 
-func (_c *MockStateDB_SetState_Call) Run(run func(ctx context.Context, arg database.SetStateParams)) *MockStateDB_SetState_Call {
+func (_c *MockStateDB_SetBlockState_Call) Run(run func(ctx context.Context, chain entities.Chain, blocks []entities.BlockHash)) *MockStateDB_SetBlockState_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(database.SetStateParams))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 entities.Chain
+		if args[1] != nil {
+			arg1 = args[1].(entities.Chain)
+		}
+		var arg2 []entities.BlockHash
+		if args[2] != nil {
+			arg2 = args[2].([]entities.BlockHash)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
 	})
 	return _c
 }
 
-func (_c *MockStateDB_SetState_Call) Return(err error) *MockStateDB_SetState_Call {
+func (_c *MockStateDB_SetBlockState_Call) Return(err error) *MockStateDB_SetBlockState_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockStateDB_SetState_Call) RunAndReturn(run func(ctx context.Context, arg database.SetStateParams) error) *MockStateDB_SetState_Call {
+func (_c *MockStateDB_SetBlockState_Call) RunAndReturn(run func(ctx context.Context, chain entities.Chain, blocks []entities.BlockHash) error) *MockStateDB_SetBlockState_Call {
 	_c.Call.Return(run)
 	return _c
 }

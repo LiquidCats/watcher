@@ -18,8 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const topicTransfer = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-
 func TestNewClient(t *testing.T) {
 	t.Parallel()
 
@@ -82,7 +80,7 @@ func TestClient_GetLatestBlock_RPCError(t *testing.T) {
 	t.Parallel()
 
 	// Malformed response -> client should return an error
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":`)) // intentionally broken JSON
 	}))

@@ -26,7 +26,7 @@ func BenchmarkClient_GetMempool(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = c.GetMempool(ctx)
 	}
 }
@@ -47,7 +47,7 @@ func BenchmarkClient_GetBlockByHash(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = c.GetBlockByHash(ctx, hash)
 	}
 }
@@ -68,7 +68,7 @@ func BenchmarkClient_GetBlockByHashWithTransactions(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = c.GetBlockByHashWithTransactions(ctx, hash)
 	}
 }
@@ -89,7 +89,7 @@ func BenchmarkClient_GetTransactionByTxID(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = c.GetTransactionByTxID(ctx, txID)
 	}
 }
@@ -113,7 +113,7 @@ func BenchmarkClient_GetLatestBlock(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = c.GetLatestBlock(ctx)
 	}
 }

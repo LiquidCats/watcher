@@ -117,9 +117,9 @@ func TestBig_UnmarshalText(t *testing.T) {
 			var b common.Big
 			err := b.UnmarshalText([]byte(tt.input))
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 				if tt.errorType != nil {
-					assert.ErrorIs(t, err, tt.errorType)
+					require.ErrorIs(t, err, tt.errorType)
 				}
 			} else {
 				require.NoError(t, err)
@@ -163,7 +163,7 @@ func TestBig_UnmarshalJSON(t *testing.T) {
 			var b common.Big
 			err := b.UnmarshalJSON([]byte(tt.input))
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, 0, tt.expected.Cmp(b.ToInt()))

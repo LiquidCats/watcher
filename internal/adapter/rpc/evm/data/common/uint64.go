@@ -1,4 +1,4 @@
-package common
+package common // nolint:revive
 
 import (
 	"reflect"
@@ -7,9 +7,9 @@ import (
 
 // Uint64 marshals/unmarshals as a JSON string with 0x prefix.
 // The zero value marshals as "0x0".
-type Uint64 uint64
+type Uint64 uint64 // nolint:recvcheck
 
-var uint64T = reflect.TypeFor[uint64]()
+var uint64T = reflect.TypeFor[uint64]() // nolint:gochecknoglobals
 
 // MarshalText implements encoding.TextMarshaler.
 func (b Uint64) MarshalText() ([]byte, error) {

@@ -87,7 +87,7 @@ func TestClient_GetLatestBlock_Success(t *testing.T) {
 			ParamsCheck: func(t *testing.T, params []any) {
 				require.Len(t, params, 2)
 				require.Equal(t, fixtures.BTCBlockHash, params[0])
-				require.Equal(t, float64(1), params[1])
+				require.Equal(t, float64(1), params[1]) // nolint:testifylint
 			},
 		},
 	)
@@ -134,7 +134,7 @@ func TestClient_GetBlockByHash_Success(t *testing.T) {
 			ParamsCheck: func(t *testing.T, params []any) {
 				require.Len(t, params, 2)
 				require.Equal(t, string(wantHash), params[0])
-				require.Equal(t, float64(1), params[1])
+				require.Equal(t, float64(1), params[1]) // nolint:testifylint
 			},
 		},
 	)
@@ -182,7 +182,7 @@ func TestClient_GetBlockByHashWithTransactions_Success(t *testing.T) {
 			ParamsCheck: func(t *testing.T, params []any) {
 				require.Len(t, params, 2)
 				require.Equal(t, string(wantHash), params[0])
-				require.Equal(t, float64(2), params[1])
+				require.Equal(t, float64(2), params[1]) // nolint:testifylint
 			},
 		},
 	)
@@ -248,7 +248,7 @@ func TestClient_GetTransactionByTxID_Success(t *testing.T) {
 			ParamsCheck: func(t *testing.T, params []any) {
 				require.Len(t, params, 2)
 				require.Equal(t, string(wantTxID), params[0])
-				require.Equal(t, float64(2), params[1])
+				require.Equal(t, float64(2), params[1]) // nolint:testifylint
 			},
 		},
 	)

@@ -116,9 +116,9 @@ func TestUint64_UnmarshalText(t *testing.T) {
 			var u common.Uint64
 			err := u.UnmarshalText([]byte(tt.input))
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 				if tt.errorType != nil {
-					assert.ErrorIs(t, err, tt.errorType)
+					require.ErrorIs(t, err, tt.errorType)
 				}
 			} else {
 				require.NoError(t, err)
@@ -162,7 +162,7 @@ func TestUint64_UnmarshalJSON(t *testing.T) {
 			var u common.Uint64
 			err := u.UnmarshalJSON([]byte(tt.input))
 			if tt.expectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, tt.expected, u)
@@ -325,7 +325,7 @@ func TestUint64_UnmarshalText_InvalidNibbles(t *testing.T) {
 		t.Run(input, func(t *testing.T) {
 			var u common.Uint64
 			err := u.UnmarshalText([]byte(input))
-			assert.Error(t, err)
+			require.Error(t, err)
 		})
 	}
 }

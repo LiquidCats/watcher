@@ -27,9 +27,9 @@ func AddressToChecksumAddress[T ~string](address T) entities.Address {
 			// Letters: uppercase if corresponding hash nibble >= 8
 			hashNibble := hash[i/2]
 			if i%2 == 0 {
-				hashNibble = hashNibble >> 4 //nolint:mnd
+				hashNibble >>= 4 //nolint:mnd
 			} else {
-				hashNibble = hashNibble & 0x0F //nolint:mnd
+				hashNibble &= 0x0F //nolint:mnd
 			}
 
 			if hashNibble >= 8 { //nolint:mnd
@@ -41,7 +41,6 @@ func AddressToChecksumAddress[T ~string](address T) entities.Address {
 	}
 
 	return entities.Address(result.String())
-
 }
 
 func keccak256(data []byte) []byte {

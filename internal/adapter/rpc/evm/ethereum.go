@@ -26,8 +26,9 @@ type Client struct {
 
 func NewClient(cfg configs.RPCConfig, nativeTicker entities.Ticker, contracts contracts.Getter) *Client {
 	return &Client{
-		cfg:       cfg,
-		contracts: contracts,
+		cfg:          cfg,
+		contracts:    contracts,
+		nativeTicker: nativeTicker,
 	}
 }
 
@@ -238,7 +239,7 @@ func (c *Client) buildTransaction(
 			Value:    value,
 			Address:  addressTo,
 			Contract: contractInfo.Address,
-			N:        uint32(idx),
+			N:        uint32(idx), // nolint:gosec
 			Ticker:   contractInfo.Ticker,
 		}
 		blockTransaction.Outputs = append(blockTransaction.Outputs, output)

@@ -2,12 +2,13 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/bits"
 	"reflect"
 )
 
-// Errors
+// Errors.
 var (
 	ErrEmptyString   = &decError{"empty hex string"}
 	ErrSyntax        = &decError{"invalid hex string"}
@@ -21,7 +22,8 @@ var (
 )
 
 func wrapTypeError(err error, typ reflect.Type) error {
-	if _, ok := err.(*decError); ok {
+	decError := &decError{}
+	if errors.As(err, &decError) {
 		return &json.UnmarshalTypeError{Value: err.Error(), Type: typ}
 	}
 	return err

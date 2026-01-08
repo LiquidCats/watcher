@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	TxTypeLegacy0 = big.NewInt(0)
-	TxTypeLegacy1 = big.NewInt(1)
-	TxTypeEIP1559 = big.NewInt(2) //nolint:mnd
+	TxTypeLegacy0 = big.NewInt(0) // nolint:gochecknoglobals
+	TxTypeLegacy1 = big.NewInt(1) // nolint:gochecknoglobals
+	TxTypeEIP1559 = big.NewInt(2) // nolint:mnd
 )
 
 type Transaction struct {

@@ -1,4 +1,4 @@
-package evm
+package evm // nolint:testpackage
 
 import (
 	"math/big"

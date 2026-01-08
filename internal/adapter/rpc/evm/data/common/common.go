@@ -2,13 +2,13 @@ package common
 
 import "math/big"
 
-var bigWordNibbles int
+var bigWordNibbles int // nolint:gochecknoglobals
 
 //nolint:gochecknoinits
 func init() {
 	// This is a weird way to compute the number of nibbles required for big.Word.
 	// The usual way would be to use constant arithmetic but go vet can't handle that.
-	b, _ := new(big.Int).SetString("FFFFFFFFFF", 16)
+	b, _ := new(big.Int).SetString("FFFFFFFFFF", 16) // nolint:mnd
 	switch len(b.Bits()) {
 	case 1:
 		bigWordNibbles = 16
@@ -26,15 +26,15 @@ func decodeNibble(in byte) uint64 {
 	case in >= '0' && in <= '9':
 		return uint64(in - '0')
 	case in >= 'A' && in <= 'F':
-		return uint64(in - 'A' + 10)
+		return uint64(in - 'A' + 10) // nolint:mnd
 	case in >= 'a' && in <= 'f':
-		return uint64(in - 'a' + 10)
+		return uint64(in - 'a' + 10) // nolint:mnd
 	default:
 		return badNibble
 	}
 }
 
-func checkNumberText(input []byte) (raw []byte, err error) {
+func checkNumberText(input []byte) (raw []byte, err error) { // nolint:nonamedreturns
 	if len(input) == 0 {
 		return nil, nil // empty strings are allowed
 	}

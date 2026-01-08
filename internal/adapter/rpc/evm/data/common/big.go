@@ -1,11 +1,11 @@
-package common
+package common // nolint:revive
 
 import (
 	"math/big"
 	"reflect"
 )
 
-var bigT = reflect.TypeFor[*Big]()
+var bigT = reflect.TypeFor[*Big]() // nolint:gochecknoglobals
 
 // Big marshals/unmarshals as a JSON string with 0x prefix.
 // The zero value marshals as "0x0".
@@ -75,10 +75,10 @@ func EncodeBig(bigint *big.Int) string {
 	if sign := bigint.Sign(); sign == 0 {
 		return "0x0"
 	} else if sign > 0 {
-		return "0x" + bigint.Text(16)
+		return "0x" + bigint.Text(16) //nolint:mnd
 	}
 
-	return "-0x" + bigint.Text(16)[1:]
+	return "-0x" + bigint.Text(16)[1:] // nolint:mnd
 }
 
 func isString(input []byte) bool {

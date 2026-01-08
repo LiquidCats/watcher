@@ -1,4 +1,4 @@
-package redis
+package bus
 
 import (
 	"context"
@@ -8,17 +8,17 @@ import (
 	"github.com/rotisserie/eris"
 )
 
-type Publisher[T any] struct {
+type RedisPublisher[T any] struct {
 	client redis.UniversalClient
 }
 
-func NewPublisher[T any](client redis.UniversalClient) *Publisher[T] {
-	return &Publisher[T]{
+func NewRedisPublisher[T any](client redis.UniversalClient) *RedisPublisher[T] {
+	return &RedisPublisher[T]{
 		client: client,
 	}
 }
 
-func (p *Publisher[T]) pub(ctx context.Context, channel string, data any) error {
+func (p *RedisPublisher[T]) pub(ctx context.Context, channel string, data any) error {
 	dataBytes, err := sonic.ConfigFastest.Marshal(data)
 	if err != nil {
 		return eris.Wrap(err, "marshal data")
@@ -31,7 +31,7 @@ func (p *Publisher[T]) pub(ctx context.Context, channel string, data any) error 
 	return nil
 }
 
-func (p *Publisher[T]) PublishTo(ctx context.Context, topic string, data T) error {
+func (p *RedisPublisher[T]) PublishTo(ctx context.Context, topic string, data T) error {
 	if err := p.pub(ctx, topic, data); err != nil {
 		return eris.Wrap(err, "publish transaction")
 	}

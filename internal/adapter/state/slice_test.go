@@ -64,8 +64,8 @@ func TestPersistedState_Set_EnforcesCapacityLimit(t *testing.T) {
 	result := st.Get()
 
 	require.NotNil(t, result)
-	assert.Len(t, result, 2)
-	assert.Equal(t, []int{4, 5}, result, "oldest values should be evicted when capacity is exceeded")
+	assert.Len(t, result, 3)
+	assert.Equal(t, []int{3, 4, 5}, result, "oldest values should be evicted when capacity is exceeded")
 }
 
 func TestPersistedState_Set_ConcurrentAccess(t *testing.T) {
@@ -159,5 +159,7 @@ func TestPersistedState_CapacityOfOne(t *testing.T) {
 	st.Set(2) // should evict 1
 
 	result = st.Get()
-	require.Nil(t, result, "with capacity 1, after second set, the slice should be empty due to eviction logic")
+	require.NotNil(t, result)
+	assert.Len(t, result, 1)
+	assert.Equal(t, []int{2}, result, "with capacity 1, after second set, only the newest value should remain")
 }

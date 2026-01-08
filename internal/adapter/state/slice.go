@@ -32,7 +32,7 @@ func (s *SliceState[T]) Set(value T) {
 		newVal = append(newVal, value)
 
 		// Enforce capacity limit
-		if len(newVal) >= s.capacity {
+		if len(newVal) > s.capacity {
 			newVal = newVal[1:]
 		}
 

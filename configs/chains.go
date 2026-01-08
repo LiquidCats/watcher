@@ -1,7 +1,6 @@
 package configs
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
@@ -12,6 +11,7 @@ type ChainsConfig []ChainConfig
 type ChainConfig struct {
 	Driver entities.Driver `yaml:"driver"`
 	Type   entities.Type   `yaml:"type"`
+	ISO    entities.Ticker `yaml:"iso"`
 	Chain  entities.Chain  `yaml:"chain"`
 
 	Persist PersistConfig `yaml:"persist"`
@@ -46,8 +46,4 @@ type PersistConfig struct {
 type WorkersConfig struct {
 	TxIDWorkerCount              uint `default:"3" yaml:"txid_worker_count"`
 	BlockTransactionsWorkerCount uint `default:"5" yaml:"block_transactions_worker_count"`
-}
-
-func (app ChainConfig) Key(k string) string {
-	return fmt.Sprintf("%s.%s.%s.%s", app.Type, app.Driver, app.Chain, k)
 }

@@ -12,9 +12,9 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type MempoolJob struct {
+type MempoolDigger struct {
 	cfg       configs.ChainConfig
-	rpcClient rpc.Client
+	rpcClient rpc.Client[any]
 	txIDCh    runner.ChanWrite[entities.TxID]
 
 	oldMempool []entities.TxID
@@ -26,14 +26,14 @@ type MempoolJobMetrics struct {
 	RequestToNodeCounter metrics.RequestToNodeCounter
 }
 
-func NewMempoolJob(
+func NewMempoolDigger(
 	cfg configs.ChainConfig,
-	rpcClient rpc.Client,
+	rpcClient rpc.Client[any],
 	txIDCh runner.ChanWrite[entities.TxID],
 	oldMempool []entities.TxID,
 	metrics MempoolJobMetrics,
-) *MempoolJob {
-	return &MempoolJob{
+) *MempoolDigger {
+	return &MempoolDigger{
 		cfg:        cfg,
 		rpcClient:  rpcClient,
 		txIDCh:     txIDCh,
@@ -42,7 +42,7 @@ func NewMempoolJob(
 	}
 }
 
-func (uc *MempoolJob) Handle(ctx context.Context) error {
+func (uc *MempoolDigger) Handle(ctx context.Context) error {
 	logger := zerolog.Ctx(ctx).
 		With().
 		Any("chain", uc.cfg.Chain).

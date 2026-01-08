@@ -14,8 +14,8 @@ import (
 
 type TxIDHandler struct {
 	cfg       configs.ChainConfig
-	rpcClient rpc.Client
-	publisher bus.Publisher[entities.Transaction]
+	rpcClient rpc.Client[any]
+	publisher bus.Publisher[entities.Transaction[any]]
 	metrics   TxIDHandlerMetrics
 }
 
@@ -25,8 +25,8 @@ type TxIDHandlerMetrics struct {
 
 func NewTxIDHandler(
 	cfg configs.ChainConfig,
-	rpcClient rpc.Client,
-	publisher bus.Publisher[entities.Transaction],
+	rpcClient rpc.Client[any],
+	publisher bus.Publisher[entities.Transaction[any]],
 	metrics TxIDHandlerMetrics,
 ) *TxIDHandler {
 	return &TxIDHandler{
@@ -54,7 +54,7 @@ func (uc *TxIDHandler) Handle(ctx context.Context, txid entities.TxID) error {
 
 	logger.Info().Msg("got transaction by hash")
 
-	err = uc.publisher.PublishTo(ctx, uc.cfg.Topics.Transactions, tx)
+	err = uc.publisher.PublishTo(ctx, uc.cfg.Topics.Transactions, *tx)
 	if err != nil {
 		return eris.Wrap(err, "publish mempool transaction")
 	}

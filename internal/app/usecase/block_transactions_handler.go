@@ -8,62 +8,78 @@ import (
 	"github.com/LiquidCats/watcher/v2/internal/app/port/bus"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/metrics"
 	"github.com/LiquidCats/watcher/v2/internal/app/port/rpc"
+	"github.com/LiquidCats/watcher/v2/internal/app/port/state"
 	"github.com/rotisserie/eris"
 	"github.com/rs/zerolog"
 )
 
-type BlockTransactionsHandler struct {
-	cfg       configs.ChainConfig
-	rpc       rpc.Client
-	publisher bus.Publisher[entities.Transaction]
-	metrics   BlockTransactionsHandlerMetrics
+type BlockTransactionsHandler[TxIn any] struct {
+	cfg            configs.ChainConfig
+	rpc            rpc.Client[TxIn]
+	transactionPub bus.Publisher[entities.Transaction[TxIn]]
+	blockPub       bus.Publisher[entities.Block]
+	inflightState  state.MapState[entities.BlockHash, bool]
+	metrics        BlockTransactionsHandlerMetrics
 }
 
 type BlockTransactionsHandlerMetrics struct {
 	RequestToNodeCounter metrics.RequestToNodeCounter
 }
 
-func NewBlockTransactionsHandler(
+func NewBlockTransactionsHandler[TxIn any](
 	cfg configs.ChainConfig,
-	rpc rpc.Client,
-	transactionPub bus.Publisher[entities.Transaction],
+	rpc rpc.Client[TxIn],
+	transactionPub bus.Publisher[entities.Transaction[TxIn]],
+	blockPub bus.Publisher[entities.Block],
+	inflightState state.MapState[entities.BlockHash, bool],
 	metrics BlockTransactionsHandlerMetrics,
-) *BlockTransactionsHandler {
-	return &BlockTransactionsHandler{
-		cfg:       cfg,
-		rpc:       rpc,
-		publisher: transactionPub,
-		metrics:   metrics,
+) *BlockTransactionsHandler[TxIn] {
+	return &BlockTransactionsHandler[TxIn]{
+		cfg:            cfg,
+		rpc:            rpc,
+		transactionPub: transactionPub,
+		blockPub:       blockPub,
+		inflightState:  inflightState,
+		metrics:        metrics,
 	}
 }
 
-func (uc *BlockTransactionsHandler) Handle(ctx context.Context, block entities.Block) error {
+func (uc *BlockTransactionsHandler[TxIn]) Handle(ctx context.Context, block *entities.Block) error {
+	defer uc.inflightState.Del(block.Hash)
+
 	logger := zerolog.Ctx(ctx).With().
-		Str("name", "transaction_handler").
 		Any("driver", uc.cfg.Driver).
 		Any("type", uc.cfg.Type).
 		Any("chain", uc.cfg.Chain).
-		Any("block_hash", block.GetHash()).
+		Any("block_hash", block.Hash).
+		Any("block_num", block.Height).
 		Logger()
 
-	block, err := uc.rpc.GetBlockByHash(ctx, block.GetHash(), true)
-	uc.metrics.RequestToNodeCounter.Inc(uc.cfg.Chain)
+	blockWithTransactions, err := uc.rpc.GetBlockByHashWithTransactions(ctx, block.Hash)
 	if err != nil {
 		return eris.Wrap(err, "get block by hash")
 	}
+	uc.metrics.RequestToNodeCounter.Inc(uc.cfg.Chain)
 
-	for _, transaction := range block.GetTransactions() {
-		logger.Debug().Any("txid", transaction.GetTxID()).Msg("publish transaction")
-		err := uc.publisher.PublishTo(ctx, uc.cfg.Topics.Transactions, transaction)
+	for _, transaction := range blockWithTransactions.Transactions {
+		logger.Debug().Any("txid", transaction.TxID).Msg("publish transaction")
+		err = uc.transactionPub.PublishTo(ctx, uc.cfg.Topics.Transactions, transaction)
 		if err != nil {
 			logger.Error().
 				Any("err", eris.ToJSON(err, true)).
-				Any("txid", transaction.GetTxID()).
+				Any("txid", transaction.TxID).
 				Msg("publish transaction")
+			return eris.Wrap(err, "publish transaction")
 		}
 	}
 
-	logger.Debug().Int("txs", len(block.GetTransactions())).Msg("block transactions handled")
+	err = uc.blockPub.PublishTo(ctx, uc.cfg.Topics.Blocks, *block)
+	if err != nil {
+		logger.Error().Any("err", eris.ToJSON(err, true)).Msg("publish block")
+		return eris.Wrap(err, "publish block")
+	}
+
+	logger.Debug().Int("txs", len(block.Transactions)).Msg("block transactions handled")
 
 	return nil
 }

@@ -6,13 +6,13 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type Redis struct {
+type RedisConfig struct {
 	Host string `yaml:"host" envconfig:"HOST"`
 	Port string `yaml:"port" envconfig:"PORT"`
 	DB   int    `yaml:"db" envconfig:"DB"`
 }
 
-func (r Redis) ToConfig(appName string) *redis.Options {
+func (r RedisConfig) ToConfig(appName string) *redis.Options {
 	return &redis.Options{
 		Addr:       net.JoinHostPort(r.Host, r.Port),
 		ClientName: appName,

@@ -1,9 +1,8 @@
-package prometheus
+package metrics
 
 import (
 	"github.com/LiquidCats/watcher/v2/internal/app/domain/entities"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type RequestsToNodeCount struct {
@@ -11,13 +10,23 @@ type RequestsToNodeCount struct {
 }
 
 func NewRequestsToNodeCount(namespace string) *RequestsToNodeCount {
-	return &RequestsToNodeCount{
-		internal: promauto.NewCounterVec(prometheus.CounterOpts{
+	counterVec := prometheus.V2.NewCounterVec(prometheus.CounterVecOpts{
+		CounterOpts: prometheus.CounterOpts{
 			Namespace: namespace,
 			Name:      "node_request_count",
-		}, []string{
-			"chain",
-		}),
+		},
+		VariableLabels: prometheus.ConstrainedLabels{
+			{
+				Name:       "chain",
+				Constraint: nil,
+			},
+		},
+	})
+
+	prometheus.MustRegister(counterVec)
+
+	return &RequestsToNodeCount{
+		internal: counterVec,
 	}
 }
 

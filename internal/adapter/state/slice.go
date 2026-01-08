@@ -2,27 +2,25 @@ package state
 
 import (
 	"sync/atomic"
-
-	"github.com/LiquidCats/watcher/v2/configs"
 )
 
-type PersistedState[T any] struct {
-	cfg configs.PersistConfig
+type SliceState[T any] struct {
+	capacity int
 
 	value atomic.Value
 }
 
-func NewMemoryState[T any](cfg configs.PersistConfig) *PersistedState[T] {
-	p := &PersistedState[T]{
-		cfg: cfg,
+func NewSliceState[T any](capacity int) *SliceState[T] {
+	p := &SliceState[T]{
+		capacity: capacity,
 	}
-	emptySlice := make([]T, 0, cfg.Capacity)
+	emptySlice := make([]T, 0, capacity)
 
 	p.value.Store(&emptySlice)
 	return p
 }
 
-func (s *PersistedState[T]) Set(value T) {
+func (s *SliceState[T]) Set(value T) {
 	for {
 		// Read current value
 		oldValPtr := s.value.Load().(*[]T) //nolint:errcheck
@@ -34,7 +32,7 @@ func (s *PersistedState[T]) Set(value T) {
 		newVal = append(newVal, value)
 
 		// Enforce capacity limit
-		if len(newVal) >= s.cfg.Capacity {
+		if len(newVal) >= s.capacity {
 			newVal = newVal[1:]
 		}
 
@@ -46,7 +44,7 @@ func (s *PersistedState[T]) Set(value T) {
 	}
 }
 
-func (s *PersistedState[T]) Get() []T {
+func (s *SliceState[T]) Get() []T {
 	valPtr := s.value.Load().(*[]T) //nolint:errcheck
 	val := *valPtr
 

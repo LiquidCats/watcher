@@ -59,7 +59,15 @@ func Run(ctx context.Context, cfg configs.Config, pool database.DBTX) error {
 			chainRunners := bootstrapEvmBased(ctx, chainConfig, redisClient, dbRepository, requestsToNodeMetric, blockChan)
 			runners = append(runners, chainRunners...)
 		case entities.TypeUtxo:
-			chainRunners := bootstrapUtxoBased(ctx, chainConfig, redisClient, dbRepository, requestsToNodeMetric, txIDChan, blockChan)
+			chainRunners := bootstrapUtxoBased(
+				ctx,
+				chainConfig,
+				redisClient,
+				dbRepository,
+				requestsToNodeMetric,
+				txIDChan,
+				blockChan,
+			)
 			runners = append(runners, chainRunners...)
 		default:
 			logger.Error().Msgf("unsupported chain type: %s", chainConfig.Type)

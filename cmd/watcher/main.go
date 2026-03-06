@@ -54,7 +54,9 @@ func main() {
 
 	logger.Info().Msg("starting application")
 
-	app.Run(ctx, cfg, pool)
+	if err = app.Run(ctx, cfg, pool); err != nil {
+		logger.Fatal().Stack().Err(err).Msg("run app")
+	}
 
 	logger.Info().Msg("shutting down")
 }

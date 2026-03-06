@@ -23,23 +23,16 @@ import (
 const ApplicationName = "watcher"
 
 func Run(ctx context.Context, cfg configs.Config, pool database.DBTX) error {
-	appRouter := router.NewAppRouter(router.AppHandlers{
-		Health: handlers.HealthHandler,
-	})
-	metricsRouter := router.NewMetricsRouter(router.MetricsHandlers{
-		Metrics: handlers.MetricsHandler,
-	})
-
 	runners := []graceful.Runner{
 		graceful.Signals,
 		graceful.Server(
-			appRouter,
+			router.NewGinRouter(handlers.NewHealth()),
 			graceful.WithPort(cfg.HTTP.Port),
 			graceful.WithReadTimeout(cfg.HTTP.ReadTimeout),
 			graceful.WithWriteTimeout(cfg.HTTP.WriteTimeout),
 		),
 		graceful.Server(
-			metricsRouter,
+			router.NewGinRouter(handlers.NewMetrics()),
 			graceful.WithPort(cfg.Metrics.Port),
 			graceful.WithReadTimeout(cfg.Metrics.ReadTimeout),
 			graceful.WithWriteTimeout(cfg.Metrics.WriteTimeout),
@@ -63,7 +56,7 @@ func Run(ctx context.Context, cfg configs.Config, pool database.DBTX) error {
 
 		switch chainConfig.Type {
 		case entities.TypeEvm:
-			chainRunners := bootstrapEvmBased(ctx, chainConfig, redisClient, dbRepository, requestsToNodeMetric, txIDChan, blockChan)
+			chainRunners := bootstrapEvmBased(ctx, chainConfig, redisClient, dbRepository, requestsToNodeMetric, blockChan)
 			runners = append(runners, chainRunners...)
 		case entities.TypeUtxo:
 			chainRunners := bootstrapUtxoBased(ctx, chainConfig, redisClient, dbRepository, requestsToNodeMetric, txIDChan, blockChan)
@@ -82,7 +75,6 @@ func bootstrapEvmBased(
 	redisClient *redis.Client,
 	dbRepository *database.Repository,
 	requestsToNodeMetric *metrics.RequestsToNodeCount,
-	txIDChan chan entities.TxID,
 	blockChan chan *entities.Block,
 ) []graceful.Runner {
 	logger := zerolog.Ctx(ctx)

@@ -6,6 +6,6 @@ type Config struct {
 	DB     DBConfig     `yaml:"db" envconfig:"DB"`
 	Redis  RedisConfig  `yaml:"redis" envconfig:"REDIS"`
 
-	HTTP    HttpConfig `yaml:"http" envconfig:"HTTP" default:"8080"`
-	Metrics HttpConfig `yaml:"metrics" envconfig:"METRICS" default:"9100"`
+	HTTP    HTTPConfig `yaml:"http" envconfig:"HTTP" default:"8080"`
+	Metrics HTTPConfig `yaml:"metrics" envconfig:"METRICS" default:"9100"`
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/LiquidCats/watcher/v2/internal/app/port"
 	"github.com/gin-contrib/logger"
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
@@ -8,11 +9,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type AppHandlers struct {
-	Health gin.HandlerFunc
-}
-
-func NewAppRouter(handlers AppHandlers) *gin.Engine {
+func NewGinRouter(attachers ...port.GinMuxAttacher) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
@@ -35,8 +32,9 @@ func NewAppRouter(handlers AppHandlers) *gin.Engine {
 			}),
 		),
 	)
-
-	router.Any("/system/healthz", handlers.Health)
+	for _, attacher := range attachers {
+		attacher.AttachGinMux(router)
+	}
 
 	return router
 }

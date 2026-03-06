@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type DB struct {
+type DBConfig struct {
 	Driver   string `yaml:"driver" envconfig:"DRIVER" default:"postgres"`
 	Host     string `yaml:"host" envconfig:"HOST"`
 	Port     string `yaml:"port" envconfig:"PORT"`
@@ -13,7 +13,7 @@ type DB struct {
 	Password string `yaml:"password" envconfig:"PASSWORD"`
 }
 
-func (d *DB) ToDSN() string {
+func (d *DBConfig) ToDSN() string {
 	return fmt.Sprintf(
 		"%s://%s:%s@%s:%s/%s?sslmode=disable",
 		d.Driver,

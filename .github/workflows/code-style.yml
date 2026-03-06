@@ -18,7 +18,7 @@ jobs:
       - name: Set Up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
+          go-version: '1.26.1'
 
       - name: Check Out
         uses: actions/checkout@v5
@@ -26,4 +26,4 @@ jobs:
       - name: Code Style Check
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.5.0
+          version: v2.11.1

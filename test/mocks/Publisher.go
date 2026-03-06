@@ -60,16 +60,32 @@ type MockPublisher_PublishTo_Call[T any] struct {
 }
 
 // PublishTo is a helper method to define mock.On call
-//   - ctx
-//   - topic
-//   - data
+//   - ctx context.Context
+//   - topic string
+//   - data T
 func (_e *MockPublisher_Expecter[T]) PublishTo(ctx interface{}, topic interface{}, data interface{}) *MockPublisher_PublishTo_Call[T] {
 	return &MockPublisher_PublishTo_Call[T]{Call: _e.mock.On("PublishTo", ctx, topic, data)}
 }
 
 func (_c *MockPublisher_PublishTo_Call[T]) Run(run func(ctx context.Context, topic string, data T)) *MockPublisher_PublishTo_Call[T] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(T))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 T
+		if args[2] != nil {
+			arg2 = args[2].(T)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
 	})
 	return _c
 }

@@ -60,15 +60,26 @@ type MockHandler_Handle_Call[T any] struct {
 }
 
 // Handle is a helper method to define mock.On call
-//   - ctx
-//   - value
+//   - ctx context.Context
+//   - value T
 func (_e *MockHandler_Expecter[T]) Handle(ctx interface{}, value interface{}) *MockHandler_Handle_Call[T] {
 	return &MockHandler_Handle_Call[T]{Call: _e.mock.On("Handle", ctx, value)}
 }
 
 func (_c *MockHandler_Handle_Call[T]) Run(run func(ctx context.Context, value T)) *MockHandler_Handle_Call[T] {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(T))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 T
+		if args[1] != nil {
+			arg1 = args[1].(T)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }

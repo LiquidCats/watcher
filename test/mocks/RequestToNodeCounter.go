@@ -48,14 +48,20 @@ type MockRequestToNodeCounter_Inc_Call struct {
 }
 
 // Inc is a helper method to define mock.On call
-//   - chain
+//   - chain entities.Chain
 func (_e *MockRequestToNodeCounter_Expecter) Inc(chain interface{}) *MockRequestToNodeCounter_Inc_Call {
 	return &MockRequestToNodeCounter_Inc_Call{Call: _e.mock.On("Inc", chain)}
 }
 
 func (_c *MockRequestToNodeCounter_Inc_Call) Run(run func(chain entities.Chain)) *MockRequestToNodeCounter_Inc_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(entities.Chain))
+		var arg0 entities.Chain
+		if args[0] != nil {
+			arg0 = args[0].(entities.Chain)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }

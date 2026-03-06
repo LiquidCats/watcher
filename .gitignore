@@ -26,3 +26,4 @@ go.work
 tmp/
 
 *.secret
+.DS_Store
